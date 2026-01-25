@@ -412,7 +412,6 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
         menu.findItem(R.id.main_menu_logs).setEnabled(enableLogs);
 
         if (XrActivity.isEnabled(this)) {
-            menu.findItem(R.id.main_menu_controller_assignment).setVisible(false);
             menu.findItem(R.id.main_menu_motion_controls).setVisible(false);
             menu.findItem(R.id.main_menu_input_controls).setVisible(false);
             menu.findItem(R.id.main_menu_pip_mode).setVisible(false);
