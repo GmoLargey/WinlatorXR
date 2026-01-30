@@ -446,14 +446,7 @@ public class SettingsFragment extends Fragment {
             editor.putBoolean("enable_big_picture_mode", ((CheckBox) view.findViewById(R.id.CBEnableBigPictureMode)).isChecked());
             saveCustomApiKeySettings(editor);
 
-            if (editor.commit()) {
-                NavigationView navigationView = getActivity().findViewById(R.id.NavigationView);
-                navigationView.setCheckedItem(R.id.main_menu_containers);
-                FragmentManager fragmentManager = getParentFragmentManager();
-                fragmentManager.beginTransaction()
-                        .replace(R.id.FLFragmentContainer, new ContainersFragment())
-                        .commit();
-            }
+            editor.commit();
         });
 
 
@@ -463,12 +456,8 @@ public class SettingsFragment extends Fragment {
 
     @Override
     public void onPause() {
-        save();
-        super.onPause();
-    }
-
-    public void save() {
         saveButton.callOnClick();
+        super.onPause();
     }
 
     private void updateTheme(boolean isDarkMode) {
