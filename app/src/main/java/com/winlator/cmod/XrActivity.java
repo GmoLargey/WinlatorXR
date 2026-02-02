@@ -147,13 +147,6 @@ public class XrActivity extends XServerDisplayActivity implements TextWatcher {
             lastText = s;
             char c = s.charAt(s.length() - 1);
             KeyEvent[] events = chars.getEvents(new char[]{c});
-            if ((c >= '0') && (c <= '9')) {
-                //Workaround for Pico 4 Ultra
-                int keyCode = c - '0' + KeyEvent.KEYCODE_NUMPAD_0;
-                events = new KeyEvent[2];
-                events[0] = new KeyEvent(KeyEvent.ACTION_DOWN, keyCode);
-                events[1] = new KeyEvent(KeyEvent.ACTION_UP, keyCode);
-            }
             if (events != null) {
                 boolean first = true;
                 for (KeyEvent keyEvent : events) {
