@@ -66,9 +66,10 @@ public class XrActivity extends XServerDisplayActivity implements TextWatcher {
     private static short lastMouseX = 0;
     private static short lastMouseY = 0;
     private static String lastText = "";
+    public static boolean mouseEmulation;
     private static float mouseSpeed = 1;
     private static final float[] smoothedMouse = new float[2];
-    private static ArrayList<Integer> framesyncMapping = new ArrayList<Integer>();
+    private static ArrayList<Integer> framesyncMapping = new ArrayList<>();
     private static XrActivity instance;
     private static XrAPI xrAPI = null;
 
@@ -87,6 +88,7 @@ public class XrActivity extends XServerDisplayActivity implements TextWatcher {
         nativeSetUsePT(usePassthrough);
         boolean curvedScreen = prefs.getBoolean("use_cs", false);
         nativeSetCurvedScreen(curvedScreen);
+        mouseEmulation = prefs.getBoolean("use_xr_mouse", true);
     }
 
     @Override
@@ -143,11 +145,21 @@ public class XrActivity extends XServerDisplayActivity implements TextWatcher {
         String s = text.getEditableText().toString();
         if (s.length() > lastText.length()) {
             lastText = s;
-            KeyEvent[] events = chars.getEvents(new char[]{s.charAt(s.length() - 1)});
+            char c = s.charAt(s.length() - 1);
+            KeyEvent[] events = chars.getEvents(new char[]{c});
+            if ((c >= '0') && (c <= '9')) {
+                //Workaround for Pico 4 Ultra
+                int keyCode = c - '0' + KeyEvent.KEYCODE_NUMPAD_0;
+                events = new KeyEvent[2];
+                events[0] = new KeyEvent(KeyEvent.ACTION_DOWN, keyCode);
+                events[1] = new KeyEvent(KeyEvent.ACTION_UP, keyCode);
+            }
             if (events != null) {
+                boolean first = true;
                 for (KeyEvent keyEvent : events) {
+                    if (!first) sleep(50);
                     server.keyboard.onKeyEvent(keyEvent);
-                    sleep(50);
+                    first = false;
                 }
             }
         } else {
@@ -425,7 +437,7 @@ public class XrActivity extends XServerDisplayActivity implements TextWatcher {
             }
 
             // Set mouse status
-            if (!instance.getXServer().isRelativeMouseMovement()) {
+            if (mouseEmulation) {
                 mouse.setX((int) smoothedMouse[0]);
                 mouse.setY((int) smoothedMouse[1]);
                 mouse.setButton(Pointer.Button.BUTTON_LEFT, buttons[primaryTrigger.ordinal()]);

@@ -321,6 +321,11 @@ public class SettingsFragment extends Fragment {
 
         final CheckBox cbUseXR = view.findViewById(R.id.CBUseXR);
         cbUseXR.setChecked(preferences.getBoolean("use_xr", true));
+        cbUseXR.setOnCheckedChangeListener((compoundButton, checked) -> {
+            SharedPreferences.Editor e = preferences.edit();
+            e.putBoolean("use_xr", checked);
+            e.commit();
+        });
 
         final CheckBox cbUsePT = view.findViewById(R.id.CBUsePT);
         cbUsePT.setChecked(preferences.getBoolean("use_pt", true));

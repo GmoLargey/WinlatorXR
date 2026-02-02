@@ -2,6 +2,7 @@ package com.winlator.cmod.contentdialog;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Point;
 import android.view.ContextThemeWrapper;
 import android.view.InputDevice;
@@ -11,12 +12,14 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.preference.PreferenceManager;
 
 import com.winlator.cmod.R;
 import com.winlator.cmod.XServerDisplayActivity;
+import com.winlator.cmod.XrActivity;
 import com.winlator.cmod.inputcontrols.ControllerManager;
 import com.winlator.cmod.winhandler.WinHandler;
 
@@ -111,6 +114,25 @@ public class ControllerAssignmentDialog {
         int capPx = dp(dialog.getContext(), 540);
         int target = Math.min((int) (widthPx * 0.90f), capPx);
         w.setLayout(target, WindowManager.LayoutParams.WRAP_CONTENT);
+
+
+        // Player XR
+        View view = dialog.getContentView();
+        LinearLayout xr = view.findViewById(R.id.PlayerXR);
+        if (XrActivity.isEnabled(view.getContext())) {
+            xr.setVisibility(View.VISIBLE);
+            CheckBox checkBox = view.findViewById(R.id.CBPlayerXRMouse);
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(view.getContext());
+            checkBox.setChecked(prefs.getBoolean("use_xr_mouse", true));
+            checkBox.setOnCheckedChangeListener((compoundButton, checked) -> {
+                SharedPreferences.Editor e = prefs.edit();
+                e.putBoolean("use_xr_mouse", checked);
+                e.commit();
+                XrActivity.mouseEmulation = checked;
+            });
+        } else {
+            xr.setVisibility(View.GONE);
+        }
     }
 
     private void initializeViews() {
