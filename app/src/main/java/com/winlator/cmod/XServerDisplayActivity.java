@@ -1001,7 +1001,20 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
 
             Executors.newSingleThreadExecutor().execute(() -> {
 
-            unload();
+            if (audioManager != null && audioDeviceCallback != null) {
+                audioManager.unregisterAudioDeviceCallback(audioDeviceCallback);
+            }
+
+            savePlaytimeData();
+            handler.removeCallbacks(savePlaytimeRunnable);
+
+            if (midiHandler != null) midiHandler.stop();
+            if (sensorManager != null) sensorManager.unregisterListener(gyroListener);
+            if (environment != null) environment.stopEnvironmentComponents();
+            if (midiHandler != null) midiHandler.stop();
+            if (winHandler != null) winHandler.stop();
+            if (wineRequestHandler != null) wineRequestHandler.stop();
+            ProcessHelper.terminateAllWineProcesses();
 
             // Finish the activity on the main UI thread
             runOnUiThread(() -> {
@@ -1010,23 +1023,6 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
                 });
             });
         }, 1000);
-    }
-
-    protected void unload() {
-        if (audioManager != null && audioDeviceCallback != null) {
-            audioManager.unregisterAudioDeviceCallback(audioDeviceCallback);
-        }
-
-        savePlaytimeData();
-        handler.removeCallbacks(savePlaytimeRunnable);
-
-        if (midiHandler != null) midiHandler.stop();
-        if (sensorManager != null) sensorManager.unregisterListener(gyroListener);
-        if (environment != null) environment.stopEnvironmentComponents();
-        if (midiHandler != null) midiHandler.stop();
-        if (winHandler != null) winHandler.stop();
-        if (wineRequestHandler != null) wineRequestHandler.stop();
-        ProcessHelper.terminateAllWineProcesses();
     }
 
     @Override
