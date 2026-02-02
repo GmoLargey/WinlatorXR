@@ -119,6 +119,8 @@ public class XrActivity extends XServerDisplayActivity implements TextWatcher {
     }
 
     public synchronized void closeSession() {
+        unload();
+
         Intent intent = getBaseContext().getPackageManager()
                 .getLaunchIntentForPackage(getBaseContext().getPackageName());
         if (intent != null) {
