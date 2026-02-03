@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    android:orientation="vertical"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_margin="10dp"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <TextView
+        android:id="@+id/TVToApplyClose"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/to_apply_close"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="@color/colorAccent"
+        android:gravity="center"
+        android:padding="8dp"
+        android:visibility="gone" />
+
+    <CheckBox
+        android:id="@+id/CBEnableImmersiveMode"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/xr_selector"
+        android:text="@string/use_immersive_mode" />
+
+    <CheckBox
+        android:id="@+id/CBEnableSBS"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/xr_selector"
+        android:text="@string/use_sbs" />
+
+    <CheckBox
+        android:id="@+id/CBEnableCurvedScreen"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/xr_selector"
+        android:text="@string/use_curved_screen" />
+
+    <CheckBox
+        android:id="@+id/CBEnablePassthrough"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/xr_selector"
+        android:text="@string/use_pt" />
+</LinearLayout>

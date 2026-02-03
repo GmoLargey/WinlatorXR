@@ -48,12 +48,11 @@ import java.util.Comparator;
 
 public class XrActivity extends XServerDisplayActivity implements TextWatcher {
     private static boolean isEnabled = false;
-    private static boolean isImmersive = false;
+    public static boolean isImmersive = false;
     private static boolean isAER = false;
-    private static boolean isSBS = false;
-    private static boolean isUDP = false;
+    public static boolean isSBS = false;
+    public static boolean isUDP = false;
     private static boolean isVR = false;
-    private static boolean usePassthrough = false;
     private static boolean[] currentButtons = new boolean[ControllerButton.values().length];
     private static final KeyCharacterMap chars = KeyCharacterMap.load(KeyCharacterMap.VIRTUAL_KEYBOARD);
     private static final float[] lastAxes = new float[ControllerAxis.values().length];
@@ -62,6 +61,7 @@ public class XrActivity extends XServerDisplayActivity implements TextWatcher {
     private static long lastDialogShown = 0;
     private static float lastDistance = 5;
     private static int lastFrameSync = 0;
+    public static int lastMode3D = -1;
     private static long lastMouseUpdate = 0;
     private static short lastMouseX = 0;
     private static short lastMouseY = 0;
@@ -84,7 +84,7 @@ public class XrActivity extends XServerDisplayActivity implements TextWatcher {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        usePassthrough = prefs.getBoolean("use_pt", true);
+        boolean usePassthrough = prefs.getBoolean("use_pt", true);
         nativeSetUsePT(usePassthrough);
         boolean curvedScreen = prefs.getBoolean("use_cs", false);
         nativeSetCurvedScreen(curvedScreen);
@@ -241,10 +241,6 @@ public class XrActivity extends XServerDisplayActivity implements TextWatcher {
             case R.id.main_menu_task_manager:
                 getWinHandler().exec("taskmgr.exe");
                 break;
-            case R.id.xr_passthrough:
-                usePassthrough = !usePassthrough;
-                nativeSetUsePT(usePassthrough);
-                break;
         }
     }
 
@@ -333,10 +329,10 @@ public class XrActivity extends XServerDisplayActivity implements TextWatcher {
                 float fovx = xrAPI.getValue(AppInput.HMD_FOVX);
                 float fovy = xrAPI.getValue(AppInput.HMD_FOVY);
                 getInstance().nativeSetFoV(fovx, fovy);
-                int mode3D = xrAPI.getIntValue(AppInput.MODE_3D);
-                if (mode3D >= 0) {
-                    isAER = mode3D == 2;
-                    isSBS = mode3D == 1;
+                lastMode3D = xrAPI.getIntValue(AppInput.MODE_3D);
+                if (lastMode3D >= 0) {
+                    isAER = lastMode3D == 2;
+                    isSBS = lastMode3D == 1;
                 }
                 String data = xrAPI.encode(axes, buttons, 0) + xrAPI.getFlags();
                 xrAPI.send(data.getBytes(StandardCharsets.US_ASCII));

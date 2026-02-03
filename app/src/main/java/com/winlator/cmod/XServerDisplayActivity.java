@@ -72,6 +72,7 @@ import com.winlator.cmod.contentdialog.DebugDialog;
 import com.winlator.cmod.contentdialog.GraphicsDriverConfigDialog;
 import com.winlator.cmod.contentdialog.ScreenEffectDialog;
 import com.winlator.cmod.contentdialog.VKD3DConfigDialog;
+import com.winlator.cmod.contentdialog.XrDialog;
 import com.winlator.cmod.contents.ContentProfile;
 import com.winlator.cmod.contents.ContentsManager;
 import com.winlator.cmod.contents.AdrenotoolsManager;
@@ -418,7 +419,7 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
             menu.findItem(R.id.main_menu_relative_mouse).setVisible(false);
             menu.findItem(R.id.main_menu_touchpad_help).setVisible(false);
         } else {
-            menu.findItem(R.id.xr_passthrough).setVisible(false);
+            menu.findItem(R.id.main_menu_xr).setVisible(false);
         }
         menu.findItem(R.id.main_menu_toggle_fullscreen).setVisible(false);
 
@@ -1421,6 +1422,11 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
             case R.id.main_menu_controller_assignment:
                 ControllerAssignmentDialog.show(this, winHandler);
                 winHandler.clearIgnoredDevices();
+                drawerLayout.closeDrawers();
+                return true;
+
+            case R.id.main_menu_xr:
+                new XrDialog(this).show();
                 drawerLayout.closeDrawers();
                 return true;
 
