@@ -67,6 +67,7 @@ public class XrActivity extends XServerDisplayActivity implements TextWatcher {
     private static short lastMouseY = 0;
     private static String lastText = "";
     public static boolean mouseEmulation;
+    public static boolean mouseLightgun;
     private static float mouseSpeed = 1;
     private static final float[] smoothedMouse = new float[2];
     private static ArrayList<Integer> framesyncMapping = new ArrayList<>();
@@ -89,6 +90,7 @@ public class XrActivity extends XServerDisplayActivity implements TextWatcher {
         boolean curvedScreen = prefs.getBoolean("use_cs", false);
         nativeSetCurvedScreen(curvedScreen);
         mouseEmulation = prefs.getBoolean("use_xr_mouse", true);
+        mouseLightgun = prefs.getBoolean("use_xr_lightgun", false);
     }
 
     @Override
@@ -427,6 +429,28 @@ public class XrActivity extends XServerDisplayActivity implements TextWatcher {
 
             // Set mouse status
             if (mouseEmulation) {
+                //Lightgun mapping
+                if (mouseLightgun && !isImmersive && !isVR) {
+                    float x = axes[primaryController == 0 ? ControllerAxis.L_X.ordinal() : ControllerAxis.R_X.ordinal()] - axes[ControllerAxis.HMD_X.ordinal()];;
+                    float y = axes[primaryController == 0 ? ControllerAxis.L_Y.ordinal() : ControllerAxis.R_Y.ordinal()] - axes[ControllerAxis.HMD_Y.ordinal()];;
+                    float yaw = axes[primaryController == 0 ? ControllerAxis.L_YAW.ordinal() : ControllerAxis.R_YAW.ordinal()];
+                    float pitch = axes[primaryController == 0 ? ControllerAxis.L_PITCH.ordinal() : ControllerAxis.R_PITCH.ordinal()];
+                    float cx = (float) instance.getXServer().windowManager.rootWindow.getWidth() / 2;
+                    float cy = (float) instance.getXServer().windowManager.rootWindow.getHeight() / 2;
+                    float aspect = (float) Math.pow(cx / cy, 0.15);
+
+                    //Positional mapping
+                    float amount = (cx + cy) / 2.0f;
+                    smoothedMouse[0] = cx + x * amount / aspect;
+                    smoothedMouse[1] = cy - y * amount;
+
+                    //Angular mapping
+                    amount = lastDistance / 4.0f * (cx + cy) / 2;
+                    smoothedMouse[0] -= (float) (Math.tan(Math.toRadians(yaw) / aspect) * amount);
+                    smoothedMouse[1] += (float) (Math.tan(Math.toRadians(pitch)) * amount);
+                }
+
+                // Apply values
                 mouse.setX((int) smoothedMouse[0]);
                 mouse.setY((int) smoothedMouse[1]);
                 mouse.setButton(Pointer.Button.BUTTON_LEFT, buttons[primaryTrigger.ordinal()]);

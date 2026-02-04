@@ -121,15 +121,25 @@ public class ControllerAssignmentDialog {
         LinearLayout xr = view.findViewById(R.id.PlayerXR);
         if (XrActivity.isEnabled(view.getContext())) {
             xr.setVisibility(View.VISIBLE);
-            CheckBox checkBox = view.findViewById(R.id.CBPlayerXRMouse);
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(view.getContext());
-            checkBox.setChecked(prefs.getBoolean("use_xr_mouse", true));
-            checkBox.setOnCheckedChangeListener((compoundButton, checked) -> {
+            CheckBox cbMouseLightgun = view.findViewById(R.id.CBPlayerXRMouseLightgun);
+            cbMouseLightgun.setChecked(prefs.getBoolean("use_xr_lightgun", false));
+            cbMouseLightgun.setOnCheckedChangeListener((compoundButton, checked) -> {
+                SharedPreferences.Editor e = prefs.edit();
+                e.putBoolean("use_xr_lightgun", checked);
+                e.commit();
+                XrActivity.mouseLightgun = checked;
+            });
+            CheckBox cbMouse = view.findViewById(R.id.CBPlayerXRMouse);
+            cbMouse.setChecked(prefs.getBoolean("use_xr_mouse", true));
+            cbMouse.setOnCheckedChangeListener((compoundButton, checked) -> {
                 SharedPreferences.Editor e = prefs.edit();
                 e.putBoolean("use_xr_mouse", checked);
                 e.commit();
                 XrActivity.mouseEmulation = checked;
+                cbMouseLightgun.setEnabled(checked);
             });
+            cbMouseLightgun.setEnabled(cbMouse.isChecked());
         } else {
             xr.setVisibility(View.GONE);
         }
