@@ -335,23 +335,25 @@ import java.nio.file.Files;
         public int getContainerId() {
             return container.id;
         }
-         
+
         public String getExecutable() {
-            String exe = "";
+            String line = getFullExecutable();
+            return line.substring(line.lastIndexOf("\\") + 1, line.length()).replaceAll("\\s+$", "");
+        }
+
+        public String getFullExecutable() {
             try {
                 List<String> lines = Files.readAllLines(file.toPath());
                 for (String line : lines) {
                     if (line.startsWith("Exec")) {
-                        exe = line.substring(line.lastIndexOf("\\") + 1, line.length()).replaceAll("\\s+$", "");
-                        break;
+                        return line.substring("Exec".length() + 1);
                     }
                 }
             }
             catch (IOException e) {
                 throw new RuntimeException(e);
             }
-        
-            return exe;
+            return "";
         }
 
         public boolean hasExtra(String name) {

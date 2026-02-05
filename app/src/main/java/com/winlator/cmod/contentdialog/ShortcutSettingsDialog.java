@@ -214,6 +214,11 @@ public class ShortcutSettingsDialog extends ContentDialog {
             llSecondaryExecOptions.setVisibility(isChecked ? View.VISIBLE : View.GONE);
         });
 
+        // Reshade integration
+        boolean useReshade = shortcut.getExtra("useReshade", "0").equals("1");
+        final CheckBox cbUseReshade = findViewById(R.id.CBUseReshade);
+        cbUseReshade.setChecked(useReshade);
+
         // Initialize the TextView for the legacy mode message
 //        TextView tvLegacyInputMessage = findViewById(R.id.TVLegacyInputMessage);
 
@@ -476,6 +481,7 @@ public class ShortcutSettingsDialog extends ContentDialog {
                     shortcut.putExtra("execDelay", null);
                 }
 
+                shortcut.putExtra("useReshade", cbUseReshade.isChecked() ? "1" : null);
                 shortcut.putExtra("fullscreenStretched", cbFullscreenStretched.isChecked() ? "1" : null);
 
                 String wincomponents = containerDetailFragment.getWinComponents(getContentView());

@@ -82,6 +82,7 @@ import com.winlator.cmod.core.EnvVars;
 import com.winlator.cmod.core.EnvironmentManager;
 import com.winlator.cmod.core.FileUtils;
 import com.winlator.cmod.core.KeyValueSet;
+import com.winlator.cmod.core.MSLink;
 import com.winlator.cmod.core.OnExtractFileListener;
 import com.winlator.cmod.core.PreloaderDialog2;
 import com.winlator.cmod.core.ProcessHelper;
@@ -153,6 +154,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.nio.file.Files;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -1651,6 +1653,14 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
         String rootPath = imageFs.getRootDir().getPath();
         FileUtils.clear(imageFs.getTmpDir());
 
+        // Unpack reshade
+        if (shortcut != null) {
+            try {
+                extractReshade();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
 
         // Create the appropriate launcher based on the container type
         GuestProgramLauncherComponent guestProgramLauncherComponent;
@@ -2595,6 +2605,60 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
         TarCompressorUtils.extract(TarCompressorUtils.Type.ZSTD, this, "ddrawrapper/nglide.tzst", windowsDir, onExtractFileListener);
     }
 
+    private void extractReshade() {
+        // Get destination path
+        int linkFollow = 0;
+        File exe = getLocalFile(shortcut.getFullExecutable());
+        while (exe.getAbsolutePath().endsWith(".lnk")) {
+            Log.d("XServerDisplayActivity", "Shortcut lead to shortcut " + exe.getAbsolutePath());
+            try {
+                exe = MSLink.getLocalFile(imageFs, exe);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            linkFollow++;
+            if (linkFollow > 5) {
+                break;
+            }
+        }
+        File dst = exe.getParentFile();
+
+        // Add or remove Reshade files
+        String inputAsset = "reshade_6.7.1.tzst";
+        boolean useReshade = shortcut.getExtra("useReshade", "0").equals("1");
+        TarCompressorUtils.Status extracted = TarCompressorUtils.isExtracted(TarCompressorUtils.Type.ZSTD, this, inputAsset, dst);
+        if (useReshade && (extracted == TarCompressorUtils.Status.NONE)) {
+            Log.i("XServerDisplayActivity", "Extracting reshade to " + dst.getAbsolutePath());
+            TarCompressorUtils.extract(TarCompressorUtils.Type.ZSTD, this, inputAsset, dst);
+        } else if (!useReshade && (extracted == TarCompressorUtils.Status.FULL)) {
+            Log.i("XServerDisplayActivity", "Removing reshade from " + dst.getAbsolutePath());
+            TarCompressorUtils.remove(TarCompressorUtils.Type.ZSTD, this, inputAsset, dst);
+        }
+
+        // Log current status
+        extracted = TarCompressorUtils.isExtracted(TarCompressorUtils.Type.ZSTD, this, inputAsset, dst);
+        Log.i("XServerDisplayActivity", "Reshade isExtracted=" + extracted);
+    }
+
+    private File getLocalFile(String winepath) {
+        String output = winepath.substring(winepath.indexOf("wine ") + 5);
+        output = output.replace(":", "");
+        char drive = output.charAt(0);
+        if ((drive >= 'A') && (drive <= 'Z')) {
+            output = (char)(drive - 'A' + 'a') + output.substring(1);
+        }
+        output = output.replaceAll("\\\\", "/");
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < output.length(); i++) {
+            if (output.charAt(i) == '/' && i + 1 < output.length()) {
+                if ((output.charAt(i + 1) == 32) || (output.charAt(i + 1) == 47)) {
+                    continue;
+                }
+            }
+            sb.append(output.charAt(i));
+        }
+        return new File(imageFs.getRootDir(), ImageFs.WINEPREFIX + "/drive_" + sb);
+    }
 
     private static int compareVersion(String varA, String varB) {
         final String[] levelsA = varA.split("\\.");

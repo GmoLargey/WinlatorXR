@@ -2,6 +2,8 @@ package com.winlator.cmod.core;
 
 import android.util.Log;
 
+import com.winlator.cmod.xenvironment.ImageFs;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -240,5 +242,80 @@ public abstract class MSLink {
     private static int readShortLittleEndian(byte[] data, int offset) {
         if (offset + 1 >= data.length) return 0;
         return (data[offset] & 0xFF) | ((data[offset + 1] & 0xFF) << 8);
+    }
+
+
+    public static File getLocalFile(ImageFs imgfs, File lnkFile) {
+        try {
+            String output = MSLink.parse(lnkFile); //C:\PROG~5P2\ROCK~BIQ\MAX_~ETZ\MAXP~BIX.EXE
+            output = output.replace(":", "");
+            char drive = output.charAt(0);
+            if ((drive >= 'A') && (drive <= 'Z')) {
+                drive = (char)(drive - 'A' + 'a');
+            }
+            File root = new File(imgfs.getRootDir(), ImageFs.WINEPREFIX + "/drive_" + drive);
+            File current = root;
+
+            String[] parts = output.substring(2).split("\\\\");
+            return resolveRecursive(root, parts, 0);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private static File resolveRecursive(File current, String[] parts, int index) {
+        if (index >= parts.length) {
+            return current;
+        }
+
+        if (!current.isDirectory()) {
+            return null;
+        }
+
+        String target = parts[index];
+
+        File exact = null;
+        File prefixMatch = null;
+
+        File[] children = current.listFiles();
+        if (children == null) return null;
+
+        String targetUpper = target.toUpperCase();
+        String targetPrefix = normalizePrefix(target);
+
+        for (File child : children) {
+            Log.d("Lubos", child.getAbsolutePath());
+            String realName = child.getName();
+
+            // 1️⃣ exact match (case-insensitive)
+            if (realName.equalsIgnoreCase(targetUpper)) {
+                exact = child;
+                break;
+            }
+
+            // 2️⃣ 8.3-style prefix match
+            String realNorm = normalize(realName);
+            if (realNorm.startsWith(targetPrefix)) {
+                prefixMatch = child;
+            }
+        }
+
+        File next = (exact != null) ? exact : prefixMatch;
+        if (next == null) {
+            return null;
+        }
+
+        return resolveRecursive(next, parts, index + 1);
+    }
+
+    private static String normalizePrefix(String shortName) {
+        int tilde = shortName.indexOf('~');
+        String prefix = (tilde >= 0) ? shortName.substring(0, tilde) : shortName;
+        return normalize(prefix);
+    }
+
+    private static String normalize(String name) {
+        return name.toUpperCase().replaceAll("[^A-Z0-9]", "");
     }
 }
