@@ -84,7 +84,7 @@ import com.winlator.cmod.core.FileUtils;
 import com.winlator.cmod.core.KeyValueSet;
 import com.winlator.cmod.core.MSLink;
 import com.winlator.cmod.core.OnExtractFileListener;
-import com.winlator.cmod.core.PreloaderDialog2;
+import com.winlator.cmod.core.PreloaderDialog;
 import com.winlator.cmod.core.ProcessHelper;
 import com.winlator.cmod.core.StringUtils;
 import com.winlator.cmod.core.TarCompressorUtils;
@@ -211,7 +211,7 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
     private String midiSoundFont = "";
     private String lc_all = "";
     private String vkbasaltConfig = "";
-    PreloaderDialog2 preloaderDialog = null;
+    PreloaderDialog preloaderDialog = null;
     private Runnable configChangedCallback = null;
     private boolean isPaused = false;
     private boolean isRelativeMouseMovement;
@@ -308,7 +308,7 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
 
 
 
-        preloaderDialog = new PreloaderDialog2(this);
+        preloaderDialog = new PreloaderDialog(this);
         preferences = PreferenceManager.getDefaultSharedPreferences(this);
 
 
@@ -622,7 +622,7 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
             public void onUpdateWindowContent(Window window) {
                 if (!winStarted[0] && window.isApplicationWindow()) {
                     xServerView.getRenderer().setCursorVisible(true);
-                    preloaderDialog.closeOnUiThread(XServerDisplayActivity.this);
+                    preloaderDialog.closeOnUiThread();
                     winStarted[0] = true;
                 }
 
@@ -1008,7 +1008,7 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
 
             // Finish the activity on the main UI thread
             runOnUiThread(() -> {
-            preloaderDialog.dismiss();
+            preloaderDialog.close();
             AppUtils.restartApplication(getApplicationContext());
                 });
             });
@@ -2498,7 +2498,7 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
 //        guestProgramLauncherComponent.setGuestExecutable(wineInfo.getExecutable(this, false)+" explorer /desktop=shell,"+Container.DEFAULT_SCREEN_SIZE+" winecfg");
         guestProgramLauncherComponent.setGuestExecutable("wineboot -u explorer /desktop=shell,"+Container.DEFAULT_SCREEN_SIZE+" winecfg");
 
-        preloaderDialog = new PreloaderDialog2(this);
+        preloaderDialog = new PreloaderDialog(this);
         guestProgramLauncherComponent.setTerminationCallback((status) -> Executors.newSingleThreadExecutor().execute(() -> {
             if (status > 0) {
                 showToast(this, R.string.unable_to_install_wine);
@@ -2507,7 +2507,7 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
                 return;
             }
 
-            preloaderDialog.showOnUiThread(this, R.string.finishing_installation);
+            preloaderDialog.showOnUiThread(R.string.finishing_installation);
             FileUtils.writeString(new File(rootDir, ImageFs.WINEPREFIX+"/.update-timestamp"), "disable\n");
 
             File userDir = new File(rootDir, ImageFs.WINEPREFIX+"/drive_c/users/xuser");
@@ -2533,7 +2533,7 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
 
             FileUtils.delete(new File(installedWineDir, "/preinstall"));
 
-            preloaderDialog.closeOnUiThread(this);
+            preloaderDialog.closeOnUiThread();
             AppUtils.restartApplication(this, R.id.main_menu_settings);
         }));
     }
