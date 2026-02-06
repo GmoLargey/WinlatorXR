@@ -100,6 +100,13 @@ JNIEXPORT void JNICALL Java_com_winlator_cmod_XrActivity_init(JNIEnv *env, jobje
     ALOGV("Init called");
 }
 
+JNIEXPORT void JNICALL Java_com_winlator_cmod_XrActivity_deinit(JNIEnv *env, jobject obj) {
+    XrEngineLeave(&xr_module_engine);
+    XrEngineDestroy(&xr_module_engine);
+    xr_initialized = false;
+    ALOGV("Deinit called");
+}
+
 JNIEXPORT void JNICALL Java_com_winlator_cmod_XrActivity_bindFramebuffer(JNIEnv *env, jobject obj) {
     if (xr_initialized) {
         XrRendererBindFramebuffer(&xr_module_renderer);
