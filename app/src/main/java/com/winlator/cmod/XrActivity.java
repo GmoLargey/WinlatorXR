@@ -122,7 +122,6 @@ public class XrActivity extends XServerDisplayActivity implements TextWatcher {
 
     public synchronized void closeSession() {
         unload();
-        deinit();
 
         Intent intent = getBaseContext().getPackageManager()
                 .getLaunchIntentForPackage(getBaseContext().getPackageName());
@@ -551,7 +550,6 @@ public class XrActivity extends XServerDisplayActivity implements TextWatcher {
 
     // Rendering
     public native void init(int width, int height, int refresh, int cpu, int gpu);
-    public native void deinit();
     public native void bindFramebuffer();
     public native int getWidth();
     public native int getHeight();
