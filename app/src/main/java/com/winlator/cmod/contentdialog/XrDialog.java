@@ -28,7 +28,7 @@ public class XrDialog extends ContentDialog {
         cbImmersiveMode.setEnabled(!XrActivity.isUDP);
         cbImmersiveMode.setChecked(isImmersive);
         CheckBox cbCurvedScreen = findViewById(R.id.CBEnableCurvedScreen);
-        cbCurvedScreen.setChecked(preferences.getBoolean("use_cs", true));
+        cbCurvedScreen.setChecked(preferences.getBoolean("use_cs", false));
         CheckBox cbPassthrough = findViewById(R.id.CBEnablePassthrough);
         cbPassthrough.setChecked(preferences.getBoolean("use_pt", true));
         TextView tvToApplyClose = findViewById(R.id.TVToApplyClose);
