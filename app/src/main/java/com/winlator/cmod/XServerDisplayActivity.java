@@ -1500,7 +1500,11 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
                 return true;
 
             case R.id.main_menu_exit:
-                exitApp();
+                if (XrActivity.isEnabled(this)) {
+                    XrActivity.getInstance().closeSession();
+                } else {
+                    exitApp();
+                }
                 return true;
             default:
                 if (XrActivity.isEnabled(this)) {
