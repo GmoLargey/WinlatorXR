@@ -127,7 +127,7 @@ public class ControllerAssignmentDialog {
             cbMouseLightgun.setOnCheckedChangeListener((compoundButton, checked) -> {
                 SharedPreferences.Editor e = prefs.edit();
                 e.putBoolean("use_xr_lightgun", checked);
-                e.commit();
+                e.apply();
                 XrActivity.mouseLightgun = checked;
             });
             CheckBox cbMouse = view.findViewById(R.id.CBPlayerXRMouse);
@@ -135,7 +135,7 @@ public class ControllerAssignmentDialog {
             cbMouse.setOnCheckedChangeListener((compoundButton, checked) -> {
                 SharedPreferences.Editor e = prefs.edit();
                 e.putBoolean("use_xr_mouse", checked);
-                e.commit();
+                e.apply();
                 XrActivity.mouseEmulation = checked;
                 cbMouseLightgun.setEnabled(checked);
             });
