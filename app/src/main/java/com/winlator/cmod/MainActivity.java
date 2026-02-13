@@ -615,7 +615,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 show(new SettingsFragment(), false);  // Forward animation
                 break;
             case R.id.main_menu_about:
-                showAboutDialog();
+                show(new WebFragment(), false);  // Forward animation
                 break;
         }
         return true;
