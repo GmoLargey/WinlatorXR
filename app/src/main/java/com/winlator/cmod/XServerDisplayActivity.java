@@ -38,7 +38,6 @@ import android.view.PointerIcon;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AccelerateDecelerateInterpolator;
-import android.view.animation.AnimationUtils;
 import android.view.animation.LayoutAnimationController;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
@@ -56,7 +55,6 @@ import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.preference.PreferenceManager;
-import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.navigation.NavigationView;
@@ -65,6 +63,7 @@ import com.winlator.cmod.box86_64.rc.RCManager;
 import com.winlator.cmod.container.Container;
 import com.winlator.cmod.container.ContainerManager;
 import com.winlator.cmod.container.Shortcut;
+import com.winlator.cmod.contentdialog.NavigationAdvDialog;
 import com.winlator.cmod.contentdialog.ContentDialog;
 import com.winlator.cmod.contentdialog.ControllerAssignmentDialog;
 import com.winlator.cmod.contentdialog.DXVKConfigDialog;
@@ -106,13 +105,7 @@ import com.winlator.cmod.math.XForm;
 import com.winlator.cmod.midi.MidiHandler;
 import com.winlator.cmod.midi.MidiManager;
 import com.winlator.cmod.renderer.GLRenderer;
-import com.winlator.cmod.renderer.effects.BloomEffect;
-import com.winlator.cmod.renderer.effects.CRTEffect;
 import com.winlator.cmod.renderer.effects.ColorEffect;
-import com.winlator.cmod.renderer.effects.FXAAEffect;
-import com.winlator.cmod.renderer.effects.FakeReflectionsEffect;
-import com.winlator.cmod.renderer.effects.NTSCCombinedEffect;
-import com.winlator.cmod.renderer.effects.ToonEffect;
 import com.winlator.cmod.widget.FrameRating;
 import com.winlator.cmod.widget.InputControlsView;
 import com.winlator.cmod.widget.LogView;
@@ -152,9 +145,7 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.nio.file.Files;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -163,7 +154,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 import cn.sherlock.com.sun.media.sound.SF2Soundbank;
@@ -408,12 +398,7 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
             navigationView.setBackgroundResource(R.color.content_dialog_background_dark);
         }
 
-        enableLogs = preferences.getBoolean("enable_wine_debug", false)
-                || preferences.getBoolean("enable_box86_64_logs", false);
         Menu menu = navigationView.getMenu();
-        menu.findItem(R.id.main_menu_logs).setVisible(enableLogs);
-        menu.findItem(R.id.main_menu_logs).setEnabled(enableLogs);
-
         if (XrActivity.isEnabled(this)) {
             menu.findItem(R.id.main_menu_motion_controls).setVisible(false);
             menu.findItem(R.id.main_menu_input_controls).setVisible(false);
@@ -517,6 +502,16 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
         if (shortcutPath != null && !shortcutPath.isEmpty()) {
             shortcut = new Shortcut(container, new File(shortcutPath));
         }
+
+        enableLogs = preferences.getBoolean("enable_wine_debug", false)
+                || preferences.getBoolean("enable_box86_64_logs", false);
+        boolean useReshade = XrActivity.isEnabled(this) &&(shortcut != null) &&
+                shortcut.getExtra("useReshade", "0").equals("1");
+        Menu advancedMenu = ((NavigationView)findViewById(R.id.NavigationAdvanced)).getMenu();
+        advancedMenu.findItem(R.id.main_menu_logs).setVisible(enableLogs);
+        advancedMenu.findItem(R.id.main_menu_logs).setEnabled(enableLogs);
+        advancedMenu.findItem(R.id.main_menu_reshade).setVisible(useReshade);
+        advancedMenu.findItem(R.id.main_menu_reshade).setEnabled(useReshade);
 
         firstTimeBoot = container.getExtra("appVersion").isEmpty();
 
@@ -1420,6 +1415,11 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
             case R.id.main_menu_controller_assignment:
                 ControllerAssignmentDialog.show(this, winHandler);
                 winHandler.clearIgnoredDevices();
+                drawerLayout.closeDrawers();
+                return true;
+
+            case R.id.main_menu_advanced:
+                new NavigationAdvDialog(this).show();
                 drawerLayout.closeDrawers();
                 return true;
 

@@ -460,6 +460,7 @@
     <string name="thumbstick_down">Thumbstick down</string>
     <string name="xr_3d">OpenXR 3D rendering</string>
     <string name="use_reshade">Inject Reshade SuperDepth3D (this is not recommended for multiplayer games)</string>
+    <string name="reshade">Reshade</string>
 
     <string name="secondary_executable">Path:</string>
     <string name="enter_secondary_exec_path"> ex: "D:/Games/My Game/My Game.exe"</string>

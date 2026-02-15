@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/main_menu_task_manager"
+        android:title="@string/task_manager"
+        android:icon="@drawable/icon_task_manager" />
+    <item
+        android:id="@+id/main_menu_terminal"
+        android:title="@string/debug_terminal"
+        android:icon="@drawable/icon_env_var" />
+    <item
+        android:id="@+id/main_menu_logs"
+        android:title="@string/logs"
+        android:icon="@drawable/icon_debug" />
+    <item
+        android:id="@+id/main_menu_reshade"
+        android:title="@string/reshade"
+        android:icon="@drawable/icon_popup_menu_bring_to_front" />
+</menu>

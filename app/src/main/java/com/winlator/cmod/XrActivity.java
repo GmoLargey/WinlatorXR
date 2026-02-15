@@ -241,6 +241,13 @@ public class XrActivity extends XServerDisplayActivity implements TextWatcher {
             case R.id.main_menu_task_manager:
                 getWinHandler().exec("taskmgr.exe");
                 break;
+            case R.id.main_menu_reshade:
+                isSBS = false;
+                Keyboard keyboard = instance.getXServer().keyboard;
+                keyboard.setKeyPress(XKeycode.KEY_HOME.id, 0);
+                sleep(50);
+                keyboard.setKeyRelease(XKeycode.KEY_HOME.id);
+                break;
         }
     }
 

@@ -69,26 +69,18 @@
     <group
         android:id="@+id/group_system"
         android:checkableBehavior="none"!-->
-        <item
-            android:id="@+id/main_menu_task_manager"
-            android:title="@string/task_manager"
-            android:icon="@drawable/icon_task_manager" />
-        <item
-            android:id="@+id/main_menu_terminal"
-            android:title="@string/debug_terminal"
-            android:icon="@drawable/icon_env_var" />
     <!--/group!-->
 
     <!-- ===== More quick actions at bottom ===== -->
     <item
+        android:id="@+id/main_menu_advanced"
+        android:icon="@drawable/icon_popup_menu_cpu"
+        android:title="@string/advanced" />
+
+    <item
         android:id="@+id/main_menu_pause"
         android:title="@string/pause_resume"
         android:icon="@drawable/icon_pause" />
-
-    <item
-        android:id="@+id/main_menu_logs"
-        android:title="@string/logs"
-        android:icon="@drawable/icon_debug" />
 
     <item
         android:id="@+id/main_menu_touchpad_help"

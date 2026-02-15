@@ -19,9 +19,9 @@ import com.google.android.material.navigation.NavigationView;
 import com.winlator.cmod.R;
 import com.winlator.cmod.XServerDisplayActivity;
 
-public class NavigationDialog extends ContentDialog {
+public class NavigationAdvDialog extends ContentDialog {
 
-    public NavigationDialog(@NonNull XServerDisplayActivity context) {
+    public NavigationAdvDialog(@NonNull XServerDisplayActivity context) {
         super(context, R.layout.navigation_dialog);
         setIcon(R.drawable.icon_container);
         setTitle(context.getString(R.string.app_name));
@@ -35,7 +35,7 @@ public class NavigationDialog extends ContentDialog {
             grid.setColumnCount(2);
         }
 
-        NavigationView navigation = context.findViewById(R.id.NavigationView);
+        NavigationView navigation = context.findViewById(R.id.NavigationAdvanced);
         Menu menu = navigation.getMenu();
         for (int i = 0; i < menu.size(); i++) {
             MenuItem item = menu.getItem(i);
