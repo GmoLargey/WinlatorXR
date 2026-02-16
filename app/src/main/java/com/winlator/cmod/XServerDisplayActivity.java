@@ -2608,7 +2608,7 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
         while (exe.getAbsolutePath().endsWith(".lnk")) {
             Log.d("XServerDisplayActivity", "Shortcut lead to shortcut " + exe.getAbsolutePath());
             try {
-                exe = MSLink.getLocalFile(imageFs, exe);
+                exe = MSLink.getLocalFile(imageFs, shortcut.container, exe);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -2652,6 +2652,12 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
                 }
             }
             sb.append(output.charAt(i));
+        }
+
+        for (String[] it : Container.drivesIterator(container.getDrives())) {
+            if (it[0].compareToIgnoreCase(drive + "") == 0) {
+                return new File(it[1], sb.substring(2));
+            }
         }
         return new File(imageFs.getRootDir(), ImageFs.WINEPREFIX + "/drive_" + sb);
     }

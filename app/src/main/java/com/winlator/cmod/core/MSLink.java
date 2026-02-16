@@ -2,6 +2,7 @@ package com.winlator.cmod.core;
 
 import android.util.Log;
 
+import com.winlator.cmod.container.Container;
 import com.winlator.cmod.xenvironment.ImageFs;
 
 import java.io.File;
@@ -245,7 +246,7 @@ public abstract class MSLink {
     }
 
 
-    public static File getLocalFile(ImageFs imgfs, File lnkFile) {
+    public static File getLocalFile(ImageFs imgfs, Container container, File lnkFile) {
         try {
             String output = MSLink.parse(lnkFile); //C:\PROG~5P2\ROCK~BIQ\MAX_~ETZ\MAXP~BIX.EXE
             output = output.replace(":", "");
@@ -254,7 +255,11 @@ public abstract class MSLink {
                 drive = (char)(drive - 'A' + 'a');
             }
             File root = new File(imgfs.getRootDir(), ImageFs.WINEPREFIX + "/drive_" + drive);
-            File current = root;
+            for (String[] it : Container.drivesIterator(container.getDrives())) {
+                if (it[0].compareToIgnoreCase(drive + "") == 0) {
+                    root = new File(it[1]);
+                }
+            }
 
             String[] parts = output.substring(2).split("\\\\");
             return resolveRecursive(root, parts, 0);
@@ -285,16 +290,13 @@ public abstract class MSLink {
         String targetPrefix = normalizePrefix(target);
 
         for (File child : children) {
-            Log.d("Lubos", child.getAbsolutePath());
             String realName = child.getName();
 
-            // 1️⃣ exact match (case-insensitive)
             if (realName.equalsIgnoreCase(targetUpper)) {
                 exact = child;
                 break;
             }
 
-            // 2️⃣ 8.3-style prefix match
             String realNorm = normalize(realName);
             if (realNorm.startsWith(targetPrefix)) {
                 prefixMatch = child;
