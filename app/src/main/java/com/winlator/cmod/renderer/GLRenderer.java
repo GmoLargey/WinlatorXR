@@ -191,14 +191,16 @@ public class GLRenderer implements GLSurfaceView.Renderer, WindowManager.OnWindo
             float pointerY = 0;
             float magnifierZoom = !screenOffsetYRelativeToCursor ? this.magnifierZoom : 1.0f;
 
-            if (magnifierZoom != 1.0f) {
-                pointerX = Mathf.clamp(xServer.pointer.getX() * magnifierZoom - xServer.screenInfo.width * 0.5f, 0, xServer.screenInfo.width * Math.abs(1.0f - magnifierZoom));
-            }
+            if (!XrActivity.isEnabled(null)) {
+                if (magnifierZoom != 1.0f) {
+                    pointerX = Mathf.clamp(xServer.pointer.getX() * magnifierZoom - xServer.screenInfo.width * 0.5f, 0, xServer.screenInfo.width * Math.abs(1.0f - magnifierZoom));
+                }
 
-            if (screenOffsetYRelativeToCursor || magnifierZoom != 1.0f) {
-                float scaleY = magnifierZoom != 1.0f ? Math.abs(1.0f - magnifierZoom) : 0.5f;
-                float offsetY = xServer.screenInfo.height * (screenOffsetYRelativeToCursor ? 0.25f : 0.5f);
-                pointerY = Mathf.clamp(xServer.pointer.getY() * magnifierZoom - offsetY, 0, xServer.screenInfo.height * scaleY);
+                if (screenOffsetYRelativeToCursor || magnifierZoom != 1.0f) {
+                    float scaleY = magnifierZoom != 1.0f ? Math.abs(1.0f - magnifierZoom) : 0.5f;
+                    float offsetY = xServer.screenInfo.height * (screenOffsetYRelativeToCursor ? 0.25f : 0.5f);
+                    pointerY = Mathf.clamp(xServer.pointer.getY() * magnifierZoom - offsetY, 0, xServer.screenInfo.height * scaleY);
+                }
             }
 
             XForm.makeTransform(tmpXForm2, -pointerX, -pointerY, magnifierZoom, magnifierZoom, 0);
@@ -356,6 +358,18 @@ public class GLRenderer implements GLSurfaceView.Renderer, WindowManager.OnWindo
                     singleWindow = true;
                 }
             }
+
+            if (XrActivity.isEnabled(null)) {
+                if (!fullscreen && XrActivity.getSBS() && !renderableWindows.isEmpty()) {
+                    RenderableWindow window = renderableWindows.get(renderableWindows.size() - 1);
+                    magnifierZoom = xServer.screenInfo.width / (float)window.content.width;
+                    magnifierEnabled = true;
+                } else {
+                    magnifierEnabled = false;
+                    magnifierZoom = 1;
+                }
+            }
+
             if (singleWindow && !renderableWindows.isEmpty()) {
                 RenderableWindow window = renderableWindows.get(renderableWindows.size() - 1);
                 renderDrawable(window.content, window.rootX, window.rootY, material, true);
