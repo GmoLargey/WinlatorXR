@@ -277,21 +277,21 @@ public class GLRenderer implements GLSurfaceView.Renderer, WindowManager.OnWindo
     }
 
     private void renderDrawable(Drawable drawable, int x, int y, ShaderMaterial material) {
-        renderDrawable(drawable, x, y, material, false, 1);
+        renderDrawable(drawable, x, y, material, false, 1, 1);
     }
 
     private void renderDrawable(Drawable drawable, int x, int y, ShaderMaterial material, boolean forceFullscreen) {
-        renderDrawable(drawable, x, y, material, forceFullscreen, 1);
+        renderDrawable(drawable, x, y, material, forceFullscreen, 1, 1);
     }
 
-    private void renderDrawable(Drawable drawable, int x, int y, ShaderMaterial material, boolean forceFullscreen, float scale) {
+    private void renderDrawable(Drawable drawable, int x, int y, ShaderMaterial material, boolean forceFullscreen, float sx, float sy) {
         synchronized (drawable.renderLock) {
             if (forceFullscreen) {
                 short newHeight = (short)Math.min(xServer.screenInfo.height, ((float)xServer.screenInfo.width / drawable.width) * drawable.height);
                 short newWidth = (short)(((float)newHeight / drawable.height) * drawable.width);
                 XForm.set(tmpXForm1, (xServer.screenInfo.width - newWidth) * 0.5f, (xServer.screenInfo.height - newHeight) * 0.5f, newWidth, newHeight);
             }
-            else XForm.set(tmpXForm1, x, y, drawable.width * scale, drawable.height * scale);
+            else XForm.set(tmpXForm1, x, y, drawable.width * sx, drawable.height * sy);
             XForm.multiply(tmpXForm1, tmpXForm1, tmpXForm2);
 
             if (XrActivity.isEnabled(null) && XrActivity.getVR() && xrFrameReady) {
@@ -417,7 +417,10 @@ public class GLRenderer implements GLSurfaceView.Renderer, WindowManager.OnWindo
         GLES20.glUniform2f(bgrMaterial.getUniformLocation("viewSize"), xServer.screenInfo.width, xServer.screenInfo.height);
         quadVertices.bind(bgrMaterial.programId);
 
+        XForm.identity(tmpXForm2);
+        float aspect = xServer.screenInfo.width / (float)xServer.screenInfo.height;;
         try (XLock lock = xServer.lock(XServer.Lockable.DRAWABLE_MANAGER)) {
+            float div = XrActivity.getSBS() ? 2 : 1;
             ContentDialog dialog = ContentDialog.getFrontInstance();
             if (dialog != null) {
                 Drawable drawable = dialog.getDrawable();
@@ -430,9 +433,14 @@ public class GLRenderer implements GLSurfaceView.Renderer, WindowManager.OnWindo
                         scale *= (float)Math.min(xServer.screenInfo.width, xServer.screenInfo.height);
                         scale /= (float)Math.min(displayMetrics.widthPixels, displayMetrics.heightPixels);
                     }
-                    int offsetX = (int) ((xServer.screenInfo.width - drawable.width * scale) / 2);
+
+                    int offsetX = (int) ((xServer.screenInfo.width - drawable.width * aspect * scale) / 2 / div);
                     int offsetY = (int) ((xServer.screenInfo.height - drawable.height * scale) / 2);
-                    renderDrawable(drawable, offsetX, offsetY, bgrMaterial, false, scale);
+                    renderDrawable(drawable, offsetX, offsetY, bgrMaterial, false, scale * aspect / div, scale);
+                    if (div > 1) {
+                        offsetX += (int) (xServer.screenInfo.width / div);
+                        renderDrawable(drawable, offsetX, offsetY, bgrMaterial, false, scale * aspect / div, scale);
+                    }
                 }
             }
         }

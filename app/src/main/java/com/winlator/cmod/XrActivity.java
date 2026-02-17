@@ -186,7 +186,7 @@ public class XrActivity extends XServerDisplayActivity implements TextWatcher {
         return isAER && ContentDialog.getFrontInstance() == null;
     }
     public static boolean getSBS() {
-        return isSBS && ContentDialog.getFrontInstance() == null;
+        return isSBS;
     }
 
     public static boolean getVR() {
@@ -224,7 +224,6 @@ public class XrActivity extends XServerDisplayActivity implements TextWatcher {
                         input.setVisibility(View.VISIBLE);
                         isVR = false;
                         isAER = false;
-                        isSBS = false;
                         isImmersive = false;
                         instance.resetText();
                         AppUtils.showKeyboard(instance);

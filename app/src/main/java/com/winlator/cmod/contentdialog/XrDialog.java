@@ -45,7 +45,7 @@ public class XrDialog extends ContentDialog {
             instance.nativeSetCurvedScreen(cbCurvedScreen.isChecked());
             instance.nativeSetUsePT(cbPassthrough.isChecked());
 
-            boolean warn = (XrActivity.isImmersive != isImmersive) || (XrActivity.isSBS != isSBS);
+            boolean warn = (XrActivity.isImmersive != isImmersive);
             tvToApplyClose.setVisibility(warn ? View.VISIBLE : View.GONE);
         };
 

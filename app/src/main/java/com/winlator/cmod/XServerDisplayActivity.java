@@ -1652,7 +1652,7 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
         // Setup reshade
         if (shortcut != null) {
             try {
-                ReshadeUtils.extractReshade(this, imageFs, shortcut);
+                ReshadeUtils.update(this, imageFs, shortcut);
             } catch (Exception e) {
                 e.printStackTrace();
             }
