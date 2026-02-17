@@ -33,7 +33,7 @@ android {
         targetSdkVersion 28
 
         versionCode 22
-        versionName "blit-08"
+        versionName "blit-09"
 
         // External native build from Winlator
         externalNativeBuild {
