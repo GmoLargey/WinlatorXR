@@ -14,7 +14,7 @@ import java.nio.charset.StandardCharsets;
 public class ReshadeUtils {
 
     private static final TarCompressorUtils.Type PKG_TYPE = TarCompressorUtils.Type.ZSTD;
-    private static final String RESHADE_DIRECTX_PKG = "reshade_6.7.1.tzst";
+    private static final String RESHADE_DIRECTX_PKG = "reshade_6.7.2.tzst";
     private static final String RESHADE_VULKAN_PKG = "reshade-vulkan.tzst";
     private static final String VULKAN_INI_FILE = "ReShade/ReShadeApps.ini";
     private static final String VULKAN_KEY_32BIT = "Software\\Khronos\\Vulkan\\ImplicitLayers";
@@ -37,12 +37,14 @@ public class ReshadeUtils {
         // Add or remove Reshade files
         TarCompressorUtils.Status extracted;
         extracted = TarCompressorUtils.isExtracted(PKG_TYPE, context, RESHADE_DIRECTX_PKG, dst);
-        if (useReshade && (extracted == TarCompressorUtils.Status.NONE)) {
-            Log.i("ReshadeUtils", "Extracting reshade to " + dst.getAbsolutePath());
-            TarCompressorUtils.extract(PKG_TYPE, context, RESHADE_DIRECTX_PKG, dst);
-        } else if (!useReshade && (extracted == TarCompressorUtils.Status.FULL)) {
-            Log.i("ReshadeUtils", "Removing reshade from " + dst.getAbsolutePath());
-            TarCompressorUtils.remove(PKG_TYPE, context, RESHADE_DIRECTX_PKG, dst);
+        if (extracted != TarCompressorUtils.Status.PARTIAL) {
+            if (useReshade) {
+                Log.i("ReshadeUtils", "Extracting reshade to " + dst.getAbsolutePath());
+                TarCompressorUtils.extract(PKG_TYPE, context, RESHADE_DIRECTX_PKG, dst);
+            } else {
+                Log.i("ReshadeUtils", "Removing reshade from " + dst.getAbsolutePath());
+                TarCompressorUtils.remove(PKG_TYPE, context, RESHADE_DIRECTX_PKG, dst);
+            }
         }
 
         // Log current status
@@ -109,6 +111,8 @@ public class ReshadeUtils {
         for (int i = 0; i < output.length(); i++) {
             if (output.charAt(i) == '/' && i + 1 < output.length()) {
                 if ((output.charAt(i + 1) == 32) || (output.charAt(i + 1) == 47)) {
+                    continue;
+                } else if (output.charAt(i + 1) == '\'') {
                     continue;
                 }
             }
