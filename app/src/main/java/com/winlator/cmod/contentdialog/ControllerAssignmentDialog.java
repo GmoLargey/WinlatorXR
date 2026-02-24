@@ -123,7 +123,11 @@ public class ControllerAssignmentDialog {
             xr.setVisibility(View.VISIBLE);
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(view.getContext());
             CheckBox cbMouseLightgun = view.findViewById(R.id.CBPlayerXRMouseLightgun);
-            cbMouseLightgun.setChecked(prefs.getBoolean("use_xr_lightgun", false));
+            if (XrActivity.isActive()) {
+                cbMouseLightgun.setChecked(XrActivity.mouseLightgun);
+            } else {
+                cbMouseLightgun.setChecked(prefs.getBoolean("use_xr_lightgun", false));
+            }
             cbMouseLightgun.setOnCheckedChangeListener((compoundButton, checked) -> {
                 SharedPreferences.Editor e = prefs.edit();
                 e.putBoolean("use_xr_lightgun", checked);
@@ -131,7 +135,11 @@ public class ControllerAssignmentDialog {
                 XrActivity.mouseLightgun = checked;
             });
             CheckBox cbMouse = view.findViewById(R.id.CBPlayerXRMouse);
-            cbMouse.setChecked(prefs.getBoolean("use_xr_mouse", true));
+            if (XrActivity.isActive()) {
+                cbMouse.setChecked(XrActivity.mouseEmulation);
+            } else {
+                cbMouse.setChecked(prefs.getBoolean("use_xr_mouse", true));
+            }
             cbMouse.setOnCheckedChangeListener((compoundButton, checked) -> {
                 SharedPreferences.Editor e = prefs.edit();
                 e.putBoolean("use_xr_mouse", checked);

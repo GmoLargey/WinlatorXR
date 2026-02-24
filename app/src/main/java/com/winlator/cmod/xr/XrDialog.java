@@ -1,4 +1,4 @@
-package com.winlator.cmod.contentdialog;
+package com.winlator.cmod.xr;
 
 import android.content.SharedPreferences;
 import android.view.View;
@@ -10,6 +10,7 @@ import androidx.preference.PreferenceManager;
 import com.winlator.cmod.R;
 import com.winlator.cmod.XServerDisplayActivity;
 import com.winlator.cmod.XrActivity;
+import com.winlator.cmod.contentdialog.ContentDialog;
 
 public class XrDialog extends ContentDialog {
 
@@ -22,7 +23,7 @@ public class XrDialog extends ContentDialog {
         boolean isSBS = XrActivity.isSBS;
 
         CheckBox cbSBS = findViewById(R.id.CBEnableSBS);
-        cbSBS.setEnabled(XrActivity.lastMode3D < 0);
+        cbSBS.setEnabled(XrActivity.getInstance().lastMode3D < 0);
         cbSBS.setChecked(isSBS);
         CheckBox cbImmersiveMode = findViewById(R.id.CBEnableImmersiveMode);
         cbImmersiveMode.setEnabled(!XrActivity.isUDP);
