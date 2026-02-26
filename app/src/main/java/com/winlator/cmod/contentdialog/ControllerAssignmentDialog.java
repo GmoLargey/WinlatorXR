@@ -121,36 +121,42 @@ public class ControllerAssignmentDialog {
         LinearLayout xr = view.findViewById(R.id.PlayerXR);
         if (XrActivity.isEnabled(view.getContext())) {
             xr.setVisibility(View.VISIBLE);
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(view.getContext());
+
             CheckBox cbMouseLightgun = view.findViewById(R.id.CBPlayerXRMouseLightgun);
-            if (XrActivity.isActive()) {
-                cbMouseLightgun.setChecked(XrActivity.mouseLightgun);
-            } else {
-                cbMouseLightgun.setChecked(prefs.getBoolean("use_xr_lightgun", false));
-            }
+            loadConfig(cbMouseLightgun, "use_xr_lightgun", false, XrActivity.mouseLightgun);
             cbMouseLightgun.setOnCheckedChangeListener((compoundButton, checked) -> {
-                SharedPreferences.Editor e = prefs.edit();
-                e.putBoolean("use_xr_lightgun", checked);
-                e.apply();
+                saveConfig(view, "use_xr_lightgun", checked);
                 XrActivity.mouseLightgun = checked;
             });
+
             CheckBox cbMouse = view.findViewById(R.id.CBPlayerXRMouse);
-            if (XrActivity.isActive()) {
-                cbMouse.setChecked(XrActivity.mouseEmulation);
-            } else {
-                cbMouse.setChecked(prefs.getBoolean("use_xr_mouse", true));
-            }
+            loadConfig(cbMouse, "use_xr_mouse", true, XrActivity.mouseEmulation);
             cbMouse.setOnCheckedChangeListener((compoundButton, checked) -> {
-                SharedPreferences.Editor e = prefs.edit();
-                e.putBoolean("use_xr_mouse", checked);
-                e.apply();
+                saveConfig(view, "use_xr_mouse", checked);
                 XrActivity.mouseEmulation = checked;
                 cbMouseLightgun.setEnabled(checked);
             });
+
             cbMouseLightgun.setEnabled(cbMouse.isChecked());
         } else {
             xr.setVisibility(View.GONE);
         }
+    }
+
+    private void loadConfig(CheckBox cb, String key, boolean defValue, boolean curValue) {
+        if (XrActivity.isActive()) {
+            cb.setChecked(curValue);
+        } else {
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(cb.getContext());
+            cb.setChecked(prefs.getBoolean(key, defValue));
+        }
+    }
+
+    private void saveConfig(View view, String key, boolean value) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(view.getContext());
+        SharedPreferences.Editor e = prefs.edit();
+        e.putBoolean(key, value);
+        e.apply();
     }
 
     private void initializeViews() {
