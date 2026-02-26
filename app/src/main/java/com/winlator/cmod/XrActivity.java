@@ -49,6 +49,7 @@ public class XrActivity extends XServerDisplayActivity {
     public static boolean isVR = false;
     public static boolean mouseEmulation;
     public static boolean mouseLightgun;
+    public static boolean wheelEmulation;
 
     // Rendering status
     private static long lastActive = 0;
@@ -72,6 +73,7 @@ public class XrActivity extends XServerDisplayActivity {
         nativeSetCurvedScreen(curvedScreen);
         mouseEmulation = prefs.getBoolean("use_xr_mouse", true);
         mouseLightgun = prefs.getBoolean("use_xr_lightgun", false);
+        wheelEmulation = prefs.getBoolean("use_xr_wheel", false);
     }
 
     @Override
@@ -255,8 +257,11 @@ public class XrActivity extends XServerDisplayActivity {
                 xrController.updateMouseSnapturn(buttons, isImmersive ? 125 : 25);
                 if (mouseLightgun && !isImmersive && !isVR)
                     xrController.updateMouseLightgun(axes, lastDistance);
-                xrController.updateMouseState(buttons);
             }
+            if (wheelEmulation) {
+                xrController.updateWheelEmulation(axes, buttons);
+            }
+            xrController.updateMouseState(buttons);
             xrController.updateKeyboardButtons(buttons);
             lastActive = System.currentTimeMillis();
         }

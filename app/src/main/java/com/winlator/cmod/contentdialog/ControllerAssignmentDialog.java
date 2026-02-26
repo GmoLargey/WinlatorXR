@@ -136,8 +136,14 @@ public class ControllerAssignmentDialog {
                 XrActivity.mouseEmulation = checked;
                 cbMouseLightgun.setEnabled(checked);
             });
-
             cbMouseLightgun.setEnabled(cbMouse.isChecked());
+
+            CheckBox cbWhheel = view.findViewById(R.id.CBPlayerXRWheelEmulation);
+            loadConfig(cbWhheel, "use_xr_wheel", false, XrActivity.wheelEmulation);
+            cbWhheel.setOnCheckedChangeListener((compoundButton, checked) -> {
+                saveConfig(view, "use_xr_wheel", checked);
+                XrActivity.wheelEmulation = checked;
+            });
         } else {
             xr.setVisibility(View.GONE);
         }
