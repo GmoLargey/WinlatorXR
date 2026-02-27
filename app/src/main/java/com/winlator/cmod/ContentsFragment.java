@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
@@ -27,12 +28,12 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.winlator.cmod.R;
 import com.winlator.cmod.container.Container;
 import com.winlator.cmod.container.ContainerManager;
 import com.winlator.cmod.contentdialog.ContentDialog;
 import com.winlator.cmod.contentdialog.ContentInfoDialog;
 import com.winlator.cmod.contentdialog.ContentUntrustedDialog;
+import com.winlator.cmod.contents.AdrenotoolsManager;
 import com.winlator.cmod.contents.ContentProfile;
 import com.winlator.cmod.contents.ContentsManager;
 import com.winlator.cmod.contents.Downloader;
@@ -48,9 +49,11 @@ import java.util.concurrent.Executors;
 public class ContentsFragment extends Fragment {
     private RecyclerView recyclerView;
     private View emptyText;
+    private AdrenotoolsManager adrenotoolsManager;
     private ContentsManager manager;
     private ContentProfile.ContentType currentContentType = ContentProfile.ContentType.CONTENT_TYPE_WINE;
     private Spinner sContentType;
+    private Button btInstallContent;
 
     private boolean isDarkMode;
 
@@ -58,6 +61,7 @@ public class ContentsFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(false);
+        adrenotoolsManager = new AdrenotoolsManager(getActivity());
         manager = new ContentsManager(getContext());
         manager.syncContents();
 
@@ -115,8 +119,18 @@ public class ContentsFragment extends Fragment {
 
         emptyText = layout.findViewById(R.id.TVEmptyText);
 
-        View btInstallContent = layout.findViewById(R.id.BTInstallContent);
+        btInstallContent = layout.findViewById(R.id.BTInstallContent);
         btInstallContent.setOnClickListener(v -> {
+            if (currentContentType == ContentProfile.ContentType.CONTENT_TYPE_ADRENO_GPU_DRIVERS) {
+                ContentDialog.confirm(getContext(), getString(R.string.install_drivers_message) + " " + getString(R.string.install_drivers_warning), () -> {
+                    Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                    intent.addCategory(Intent.CATEGORY_OPENABLE);
+                    intent.setType("*/*");
+                    getActivity().startActivityFromFragment(this, intent, MainActivity.OPEN_FILE_REQUEST_CODE);
+                });
+                return;
+            }
+
             ContentDialog.confirm(getContext(), getString(R.string.do_you_want_to_install_content) + " " + getString(R.string.pls_make_sure_content_trustworthy) + " "
                     + getString(R.string.content_suffix_is_wcp_packed_xz_zst) + '\n' + getString(R.string.get_more_contents_form_github), () -> {
                 Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
@@ -167,6 +181,16 @@ public class ContentsFragment extends Fragment {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        if (currentContentType == ContentProfile.ContentType.CONTENT_TYPE_ADRENO_GPU_DRIVERS) {
+            if (requestCode == MainActivity.OPEN_FILE_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+                Uri uri = data.getData();
+                String driver = adrenotoolsManager.installDriver(uri);
+                if (!driver.isEmpty())
+                    ((DriversAdapter)recyclerView.getAdapter()).addItem(driver);
+            }
+            return;
+        }
+
         if (requestCode == MainActivity.OPEN_FILE_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
             PreloaderDialog preloaderDialog = new PreloaderDialog(getActivity());
             preloaderDialog.showOnUiThread(R.string.installing_content);
@@ -233,6 +257,16 @@ public class ContentsFragment extends Fragment {
     }
 
     private void loadContentList() {
+        if (currentContentType == ContentProfile.ContentType.CONTENT_TYPE_ADRENO_GPU_DRIVERS) {
+            emptyText.setVisibility(View.GONE);
+            recyclerView.setVisibility(View.VISIBLE);
+            recyclerView.setAdapter(new DriversAdapter(adrenotoolsManager.enumarateInstalledDrivers()));
+            btInstallContent.setText(R.string.install_drivers);
+            return;
+        } else {
+            btInstallContent.setText(R.string.install_content);
+        }
+
         List<ContentProfile> profiles = manager.getProfiles(currentContentType);
         if (profiles.isEmpty()) {
             emptyText.setVisibility(View.VISIBLE);
@@ -351,6 +385,60 @@ public class ContentsFragment extends Fragment {
         @Override
         public int getItemCount() {
             return data.size();
+        }
+    }
+
+
+    private class DriversAdapter extends RecyclerView.Adapter<DriversAdapter.ViewHolder> {
+        private ArrayList<String> driversList;
+
+        public class ViewHolder extends RecyclerView.ViewHolder {
+            private TextView tvName;
+            private TextView tvVersion;
+            private ImageButton btMenu;
+
+            public ViewHolder(View v) {
+                super(v);
+                tvName = v.findViewById(R.id.TVName);
+                tvVersion = v.findViewById(R.id.TVVersion);
+                btMenu = v.findViewById(R.id.BTMenu);
+            }
+        }
+
+        public DriversAdapter(ArrayList<String> driversList) {
+            this.driversList = driversList;
+        }
+
+        @Override
+        public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
+            View view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.adrenotools_list_item, viewGroup, false);
+            return new ViewHolder(view);
+        }
+
+        @Override
+        public void onBindViewHolder(ViewHolder viewHolder, final int position) {
+            viewHolder.tvName.setText(adrenotoolsManager.getDriverName(driversList.get(position)));
+            viewHolder.tvVersion.setText(adrenotoolsManager.getDriverVersion(driversList.get(position)));
+            viewHolder.btMenu.setOnClickListener((v) -> {
+                removeAtIndex(position);
+            });
+        }
+
+        public void addItem(String item) {
+            driversList.add(item);
+            notifyItemInserted(getItemCount() - 1);
+        }
+
+        public void removeAtIndex(int index) {
+            String deletedDriver = driversList.remove(index);
+            adrenotoolsManager.removeDriver(deletedDriver);
+            notifyItemRemoved(index);
+            notifyItemRangeChanged(index, getItemCount());
+        }
+
+        @Override
+        public int getItemCount() {
+            return driversList.size();
         }
     }
 }
