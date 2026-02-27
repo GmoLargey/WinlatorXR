@@ -5,17 +5,12 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
-import android.os.Build;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.Pair;
 
 import com.winlator.cmod.R;
-import com.winlator.cmod.XrActivity;
-import com.winlator.cmod.contentdialog.ContentDialog;
 import com.winlator.cmod.math.Mathf;
 import com.winlator.cmod.math.XForm;
-import com.winlator.cmod.renderer.material.BGRMaterial;
 import com.winlator.cmod.renderer.material.CursorMaterial;
 import com.winlator.cmod.renderer.material.ShaderMaterial;
 import com.winlator.cmod.renderer.material.WindowMaterial;
@@ -37,36 +32,29 @@ import javax.microedition.khronos.opengles.GL10;
 
 public class GLRenderer implements GLSurfaceView.Renderer, WindowManager.OnWindowModificationListener, Pointer.OnPointerMotionListener {
     public final XServerView xServerView;
-    private final XServer xServer;
+    protected final XServer xServer;
     public final VertexAttribute quadVertices = new VertexAttribute("position", 2);
     private final float[] tmpXForm1 = XForm.getInstance();
-    private final float[] tmpXForm2 = XForm.getInstance();
-    private final BGRMaterial bgrMaterial = new BGRMaterial();
+    protected final float[] tmpXForm2 = XForm.getInstance();
     private final CursorMaterial cursorMaterial = new CursorMaterial();
     private final WindowMaterial windowMaterial = new WindowMaterial();
     public final ViewTransformation viewTransformation = new ViewTransformation();
     private final Drawable rootCursorDrawable;
-    private final ArrayList<RenderableWindow> renderableWindows = new ArrayList<>();
+    protected final ArrayList<RenderableWindow> renderableWindows = new ArrayList<>();
     private String forceFullscreenWMClass = null;
-    private boolean fullscreen = false;
+    protected boolean fullscreen = false;
     private boolean toggleFullscreen = false;
-    private boolean xrImmersive = false;
-    private boolean xrFrameReady = false;
     public boolean viewportNeedsUpdate = true;
     private boolean cursorVisible = true;
     private boolean rootWindowDownsized = false;
     private boolean screenOffsetYRelativeToCursor = false;
     private String[] unviewableWMClasses = null;
-    private float magnifierZoom = 1.0f;
-    private boolean magnifierEnabled = true;
+    protected float magnifierZoom = 1.0f;
+    protected boolean magnifierEnabled = true;
     public int surfaceWidth;
     public int surfaceHeight;
     private final EffectComposer effectComposer;
-    private long timestampHadWindow = Long.MAX_VALUE;
 
-    private Texture[] lastTexture = {new Texture(), new Texture()};
-    private short lastTextureWidth = 0;
-    private short lastTextureHeight = 0;
 
     public GLRenderer(XServerView xServerView, XServer xServer) {
         this.xServerView = xServerView;
@@ -102,26 +90,6 @@ public class GLRenderer implements GLSurfaceView.Renderer, WindowManager.OnWindo
 
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) {
-        if (XrActivity.isEnabled(null)) {
-            XrActivity activity = XrActivity.getInstance();
-            String res = activity.getScreenSize();
-            String[] parts = res.split("x");
-            width = Short.parseShort(parts[0]);
-            height = Short.parseShort(parts[1]);
-            if (width < 1280) {
-                height = 1280 * height / width;
-                width = 1280;
-            }
-
-            int cpuLevel = activity.getContainer().getCpuLevel();
-            int gpuLevel = activity.getContainer().getGpuLevel();
-            int refresh = activity.getContainer().getRefreshRate();
-            activity.init(width, height, refresh, cpuLevel, gpuLevel);
-            height = width; ////Use square resolution
-            GLES20.glViewport(0, 0, width, height);
-            magnifierEnabled = false;
-        }
-
         surfaceWidth = width;
         surfaceHeight = height;
         viewTransformation.update(width, height, xServer.screenInfo.width, xServer.screenInfo.height);
@@ -130,44 +98,47 @@ public class GLRenderer implements GLSurfaceView.Renderer, WindowManager.OnWindo
 
     @Override
     public void onDrawFrame(GL10 gl) {
-        if (toggleFullscreen) {
-            fullscreen = !fullscreen;
-            toggleFullscreen = false;
-            viewportNeedsUpdate = true;
-
-        }
-
-        // Prepare XR frame
-        boolean xrFrame = false;
-        xrImmersive = false;
-        if (XrActivity.isEnabled(null)) {
-            fullscreen = XrActivity.getVR();
-            xrImmersive = XrActivity.getImmersive() || fullscreen;
-            xrFrameReady = xrFrame = XrActivity.getInstance().initFrame(xrImmersive,
-                    XrActivity.getSBS(), XrActivity.getAER(), XrActivity.getDistance());
-            XrActivity.getInstance().updateFrame();
-            if (!XrActivity.getAER()) {
-                XrActivity.getInstance().bindFBO(0);
-            }
-        } else {
-            fullscreen = false;
-        }
-
-        // Apply all the effects using EffectComposer
+        preFrame();
         if (effectComposer.hasEffects()) {
             effectComposer.render();  // <-- This line applies the effects
         } else {
             drawFrame();
         }
+        postFrame();
+    }
 
-        // Finalize XR frame if supported
-        if (xrFrame) {
-            renderDialog();
-            xrFrameReady = false;
-            XrActivity.getInstance().endFrame();
-            xServerView.requestRender();
+    protected void preFrame() {
+        if (toggleFullscreen) {
+            fullscreen = !fullscreen;
+            toggleFullscreen = false;
+            viewportNeedsUpdate = true;
         }
     }
+
+    protected void postFrame() {}
+
+    protected boolean preDrawable(ShaderMaterial material, Drawable drawable) { return true; }
+
+    protected Pair<Float, Float> preTransform() {
+        float pointerX = 0;
+        float pointerY = 0;
+
+        if (magnifierZoom != 1.0f) {
+            pointerX = Mathf.clamp(xServer.pointer.getX() * magnifierZoom - xServer.screenInfo.width * 0.5f, 0, xServer.screenInfo.width * Math.abs(1.0f - magnifierZoom));
+        }
+
+        if (screenOffsetYRelativeToCursor || magnifierZoom != 1.0f) {
+            float scaleY = magnifierZoom != 1.0f ? Math.abs(1.0f - magnifierZoom) : 0.5f;
+            float offsetY = xServer.screenInfo.height * (screenOffsetYRelativeToCursor ? 0.25f : 0.5f);
+            pointerY = Mathf.clamp(xServer.pointer.getY() * magnifierZoom - offsetY, 0, xServer.screenInfo.height * scaleY);
+        }
+
+        return new Pair<>(pointerX, pointerY);
+    }
+
+    protected void preWindows() {}
+
+    protected void postWindows() {}
 
     public void drawFrame() {
         // Update the viewport if necessary
@@ -187,23 +158,10 @@ public class GLRenderer implements GLSurfaceView.Renderer, WindowManager.OnWindo
         // Apply basic transformations and draw windows
         if (magnifierEnabled) {
             // Apply magnifier transformations if enabled
-            float pointerX = 0;
-            float pointerY = 0;
             float magnifierZoom = !screenOffsetYRelativeToCursor ? this.magnifierZoom : 1.0f;
 
-            if (!XrActivity.isEnabled(null)) {
-                if (magnifierZoom != 1.0f) {
-                    pointerX = Mathf.clamp(xServer.pointer.getX() * magnifierZoom - xServer.screenInfo.width * 0.5f, 0, xServer.screenInfo.width * Math.abs(1.0f - magnifierZoom));
-                }
-
-                if (screenOffsetYRelativeToCursor || magnifierZoom != 1.0f) {
-                    float scaleY = magnifierZoom != 1.0f ? Math.abs(1.0f - magnifierZoom) : 0.5f;
-                    float offsetY = xServer.screenInfo.height * (screenOffsetYRelativeToCursor ? 0.25f : 0.5f);
-                    pointerY = Mathf.clamp(xServer.pointer.getY() * magnifierZoom - offsetY, 0, xServer.screenInfo.height * scaleY);
-                }
-            }
-
-            XForm.makeTransform(tmpXForm2, -pointerX, -pointerY, magnifierZoom, magnifierZoom, 0);
+            Pair<Float, Float> offset = preTransform();
+            XForm.makeTransform(tmpXForm2, -offset.first, -offset.second, magnifierZoom, magnifierZoom, 0);
         } else {
             if (!fullscreen) {
                 int pointerY = 0;
@@ -222,7 +180,7 @@ public class GLRenderer implements GLSurfaceView.Renderer, WindowManager.OnWindo
         }
 
         // Render windows without effects
-        renderWindows(windowMaterial, xrImmersive);
+        renderWindows(windowMaterial, false);
 
         // Render cursor if enabled
         if (cursorVisible && !rootWindowDownsized) renderCursor();
@@ -284,7 +242,7 @@ public class GLRenderer implements GLSurfaceView.Renderer, WindowManager.OnWindo
         renderDrawable(drawable, x, y, material, forceFullscreen, 1, 1);
     }
 
-    private void renderDrawable(Drawable drawable, int x, int y, ShaderMaterial material, boolean forceFullscreen, float sx, float sy) {
+    protected void renderDrawable(Drawable drawable, int x, int y, ShaderMaterial material, boolean forceFullscreen, float sx, float sy) {
         synchronized (drawable.renderLock) {
             if (forceFullscreen) {
                 short newHeight = (short)Math.min(xServer.screenInfo.height, ((float)xServer.screenInfo.width / drawable.width) * drawable.height);
@@ -293,15 +251,7 @@ public class GLRenderer implements GLSurfaceView.Renderer, WindowManager.OnWindo
             }
             else XForm.set(tmpXForm1, x, y, drawable.width * sx, drawable.height * sy);
             XForm.multiply(tmpXForm1, tmpXForm1, tmpXForm2);
-
-            if (XrActivity.isEnabled(null) && XrActivity.getVR() && xrFrameReady) {
-                Pair<Boolean, Integer> framesync = XrActivity.getInstance().processFramesync(drawable);
-                xrFrameReady = false;
-                if (XrActivity.getAER()) {
-                    renderAER(drawable, material, framesync.first, framesync.second);
-                    return;
-                }
-            }
+            if (!preDrawable(material, drawable)) return;
 
             Texture texture = drawable.getTexture();
             texture.updateFromDrawable(drawable);
@@ -309,32 +259,7 @@ public class GLRenderer implements GLSurfaceView.Renderer, WindowManager.OnWindo
         }
     }
 
-    private void renderAER(Drawable drawable, ShaderMaterial material, boolean shouldUpdate, int targetFBO) {
-        if ((lastTextureWidth != drawable.getStride()) || (lastTextureHeight != drawable.height)) {
-            for (int i = 0; i < lastTexture.length; i++) {
-                lastTexture[i].destroy();
-                lastTexture[i] = new Texture();
-            }
-            lastTextureWidth = drawable.getStride();
-            lastTextureHeight = drawable.height;
-        }
-
-        if (shouldUpdate) {
-            lastTexture[targetFBO].setNeedsUpdate(true);
-            lastTexture[targetFBO].updateFromBuffer(drawable.getData(), drawable.getStride(), drawable.height);
-        }
-
-        for (int i = 0; i < lastTexture.length; i++) {
-            XrActivity.getInstance().bindFBO(i);
-            if (lastTexture[i].isAllocated()) {
-                renderTexture(lastTexture[i], material);
-            }
-        }
-        XrActivity.getInstance().bindFBO(-1);
-        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
-    }
-
-    private void renderTexture(Texture texture, ShaderMaterial material) {
+    protected void renderTexture(Texture texture, ShaderMaterial material) {
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture.getTextureId());
         GLES20.glUniform1i(material.getUniformLocation("texture"), 0);
@@ -343,7 +268,7 @@ public class GLRenderer implements GLSurfaceView.Renderer, WindowManager.OnWindo
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
     }
 
-    private void renderWindows(ShaderMaterial material, boolean forceFullscreen) {
+    protected void renderWindows(ShaderMaterial material, boolean forceFullscreen) {
         material.use();
         GLES20.glUniform2f(material.getUniformLocation("viewSize"), xServer.screenInfo.width, xServer.screenInfo.height);
         quadVertices.bind(material.programId);
@@ -359,17 +284,7 @@ public class GLRenderer implements GLSurfaceView.Renderer, WindowManager.OnWindo
                 }
             }
 
-            if (XrActivity.isEnabled(null)) {
-                if (!fullscreen && XrActivity.getSBS() && !renderableWindows.isEmpty()) {
-                    RenderableWindow window = renderableWindows.get(renderableWindows.size() - 1);
-                    magnifierZoom = xServer.screenInfo.width / (float)window.content.width;
-                    magnifierEnabled = true;
-                } else {
-                    magnifierEnabled = false;
-                    magnifierZoom = 1;
-                }
-            }
-
+            preWindows();
             if (singleWindow && !renderableWindows.isEmpty()) {
                 RenderableWindow window = renderableWindows.get(renderableWindows.size() - 1);
                 renderDrawable(window.content, window.rootX, window.rootY, material, true);
@@ -378,15 +293,7 @@ public class GLRenderer implements GLSurfaceView.Renderer, WindowManager.OnWindo
                     renderDrawable(window.content, window.rootX, window.rootY, material, window.forceFullscreen);
                 }
             }
-
-            //autoclose app when there are no windows
-            if (!renderableWindows.isEmpty()) {
-                timestampHadWindow = System.currentTimeMillis();
-            }  else if ((System.currentTimeMillis() - timestampHadWindow > 1000)) {
-                if (XrActivity.isEnabled(null)) {
-                    XrActivity.getInstance().runOnUiThread(() -> XrActivity.getInstance().closeSession());
-                }
-            }
+            postWindows();
         }
 
         quadVertices.disable();
@@ -409,41 +316,6 @@ public class GLRenderer implements GLSurfaceView.Renderer, WindowManager.OnWindo
             else renderDrawable(rootCursorDrawable, x, y, cursorMaterial);
         }
 
-        quadVertices.disable();
-    }
-
-    private void renderDialog() {
-        bgrMaterial.use();
-        GLES20.glUniform2f(bgrMaterial.getUniformLocation("viewSize"), xServer.screenInfo.width, xServer.screenInfo.height);
-        quadVertices.bind(bgrMaterial.programId);
-
-        XForm.identity(tmpXForm2);
-        float aspect = xServer.screenInfo.width / (float)xServer.screenInfo.height;;
-        try (XLock lock = xServer.lock(XServer.Lockable.DRAWABLE_MANAGER)) {
-            float div = XrActivity.getSBS() ? 2 : 1;
-            ContentDialog dialog = ContentDialog.getFrontInstance();
-            if (dialog != null) {
-                Drawable drawable = dialog.getDrawable();
-                if (drawable != null) {
-                    float scale = xServer.screenInfo.height / 1200.0f;
-                    if (Build.MANUFACTURER.compareToIgnoreCase("PICO") == 0) {
-                        scale = 0.75f;
-                        DisplayMetrics displayMetrics = new DisplayMetrics();
-                        XrActivity.getInstance().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-                        scale *= (float)Math.min(xServer.screenInfo.width, xServer.screenInfo.height);
-                        scale /= (float)Math.min(displayMetrics.widthPixels, displayMetrics.heightPixels);
-                    }
-
-                    int offsetX = (int) ((xServer.screenInfo.width - drawable.width * aspect * scale) / 2 / div);
-                    int offsetY = (int) ((xServer.screenInfo.height - drawable.height * scale) / 2);
-                    renderDrawable(drawable, offsetX, offsetY, bgrMaterial, false, scale * aspect / div, scale);
-                    if (div > 1) {
-                        offsetX += (int) (xServer.screenInfo.width / div);
-                        renderDrawable(drawable, offsetX, offsetY, bgrMaterial, false, scale * aspect / div, scale);
-                    }
-                }
-            }
-        }
         quadVertices.disable();
     }
 

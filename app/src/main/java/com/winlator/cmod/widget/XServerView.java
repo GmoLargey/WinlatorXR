@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 import com.winlator.cmod.renderer.GLRenderer;
+import com.winlator.cmod.xr.XrRenderer;
 import com.winlator.cmod.xserver.XServer;
 
 @SuppressLint("ViewConstructor")
@@ -19,7 +20,7 @@ public class XServerView extends GLSurfaceView {
         setEGLContextClientVersion(3);
         setEGLConfigChooser(8, 8, 8, 8, 0, 0);
         setPreserveEGLContextOnPause(true);
-        renderer = new GLRenderer(this, xServer);
+        renderer = new XrRenderer(this, xServer);
         setRenderer(renderer);
         setRenderMode(RENDERMODE_WHEN_DIRTY);
     }
