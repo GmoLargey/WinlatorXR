@@ -186,6 +186,7 @@ public class XrActivity extends XServerDisplayActivity {
                 getWinHandler().exec("taskmgr.exe");
                 break;
             case R.id.main_menu_reshade:
+                isImmersive = false;
                 isSBS = false;
                 xrKeyboard.sendKey(XKeycode.KEY_HOME);
                 break;
