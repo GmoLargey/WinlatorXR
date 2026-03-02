@@ -208,7 +208,7 @@ public abstract class TarCompressorUtils {
     public static Status isExtracted(Type type, InputStream source, File destination) {
         if (source == null) return Status.UNKNOWN;
         try (InputStream inStream = getCompressorInputStream(type, source);
-             ArchiveInputStream tar = new TarArchiveInputStream(inStream)) {
+            ArchiveInputStream tar = new TarArchiveInputStream(inStream)) {
             TarArchiveEntry entry;
             boolean existing = false;
             boolean incomplete = false;

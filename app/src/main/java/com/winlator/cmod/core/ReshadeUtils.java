@@ -14,7 +14,8 @@ import java.nio.charset.StandardCharsets;
 public class ReshadeUtils {
 
     private static final TarCompressorUtils.Type PKG_TYPE = TarCompressorUtils.Type.ZSTD;
-    private static final String RESHADE_DIRECTX_PKG = "reshade_6.7.2.tzst";
+    private static final String RESHADE_DIRECTX_PKG = "reshade-directx.tzst";
+    private static final String RESHADE_PLUGINS_PKG = "reshade-plugins.tzst";
     private static final String RESHADE_VULKAN_PKG = "reshade-vulkan.tzst";
     private static final String VULKAN_INI_FILE = "ReShade/ReShadeApps.ini";
     private static final String VULKAN_KEY_32BIT = "Software\\Khronos\\Vulkan\\ImplicitLayers";
@@ -28,7 +29,8 @@ public class ReshadeUtils {
         File dst = exe.getParentFile();
         boolean useReshade = shortcut.getExtra("useReshade", "0").equals("1");
 
-        // Update runtimes
+        // Update packages
+        updatePlugins(context, useReshade, dst);
         updateDirectX(context, useReshade, dst);
         updateVulkan(context, useReshade, shortcut, imageFs, exe);
     }
@@ -50,6 +52,16 @@ public class ReshadeUtils {
         // Log current status
         extracted = TarCompressorUtils.isExtracted(PKG_TYPE, context, RESHADE_DIRECTX_PKG, dst);
         Log.i("ReshadeUtils", "Reshade isExtracted=" + extracted);
+    }
+
+    private static void updatePlugins(Context context, boolean useReshade, File dst) {
+        if (useReshade) {
+            Log.i("ReshadeUtils", "Extracting reshade to " + dst.getAbsolutePath());
+            TarCompressorUtils.extract(PKG_TYPE, context, RESHADE_PLUGINS_PKG, dst);
+        } else {
+            Log.i("ReshadeUtils", "Removing reshade from " + dst.getAbsolutePath());
+            TarCompressorUtils.remove(PKG_TYPE, context, RESHADE_PLUGINS_PKG, dst);
+        }
     }
 
     private static void updateVulkan(Context context, boolean useReshade, Shortcut shortcut, ImageFs imageFs, File exe) {
