@@ -279,10 +279,6 @@ public abstract class MSLink {
         }
 
         String target = parts[index];
-
-        File exact = null;
-        File prefixMatch = null;
-
         File[] children = current.listFiles();
         if (children == null) return null;
 
@@ -293,22 +289,18 @@ public abstract class MSLink {
             String realName = child.getName();
 
             if (realName.equalsIgnoreCase(targetUpper)) {
-                exact = child;
-                break;
-            }
-
-            String realNorm = normalize(realName);
-            if (realNorm.startsWith(targetPrefix)) {
-                prefixMatch = child;
+                File output = resolveRecursive(child, parts, index + 1);
+                if (output != null) {
+                    return output;
+                }
+            } else if (normalize(realName).startsWith(targetPrefix)) {
+                File output = resolveRecursive(child, parts, index + 1);
+                if (output != null) {
+                    return output;
+                }
             }
         }
-
-        File next = (exact != null) ? exact : prefixMatch;
-        if (next == null) {
-            return null;
-        }
-
-        return resolveRecursive(next, parts, index + 1);
+        return null;
     }
 
     private static String normalizePrefix(String shortName) {
