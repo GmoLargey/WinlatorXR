@@ -34,6 +34,16 @@ public class ReshadeUtils {
         updatePlugins(context, useReshade, dst);
         updateDirectX(context, useReshade, dst);
         updateVulkan(context, useReshade, shortcut, imageFs, exe);
+
+        // Workaround for launchers
+        File ue = locateUE(dst);
+        if (ue != null) {
+            dst = ue;
+            exe = getFirstExe(dst);
+            updatePlugins(context, useReshade, dst);
+            updateDirectX(context, useReshade, dst);
+            updateVulkan(context, useReshade, shortcut, imageFs, exe);
+        }
     }
 
     private static void updateDirectX(Context context, boolean useReshade, File dst) {
@@ -91,6 +101,18 @@ public class ReshadeUtils {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private static File getFirstExe(File dst) {
+        File[] files = dst.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                if (file.getAbsolutePath().endsWith(".exe")) {
+                    return file;
+                }
+            }
+        }
+        return null;
     }
 
     private static File getLocalExeFile(ImageFs imageFs, Shortcut shortcut) {
@@ -157,5 +179,20 @@ public class ReshadeUtils {
         String path = file.getAbsolutePath().substring(base.length() + 1);
         output += path.replace("/", "\\");
         return output;
+    }
+
+    private static File locateUE(File dst) {
+        File[] files = dst.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                if (file.isDirectory()) {
+                    File result = locateUE(file);
+                    if (result != null) {
+                        return result;
+                    }
+                }
+            }
+        }
+        return dst.getAbsolutePath().endsWith("Binaries/Win64") ? dst : null;
     }
 }
