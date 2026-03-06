@@ -179,7 +179,7 @@ public class XrActivity extends XServerDisplayActivity {
             case R.id.main_menu_magnifier:
                 lastDistance -= 1.0f;
                 if (lastDistance < 0.5f) {
-                    lastDistance = 5.0f;
+                    lastDistance = 7.0f;
                 }
                 break;
             case R.id.main_menu_task_manager:
