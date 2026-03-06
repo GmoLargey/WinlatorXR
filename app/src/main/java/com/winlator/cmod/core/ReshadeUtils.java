@@ -13,6 +13,7 @@ import java.nio.charset.StandardCharsets;
 
 public class ReshadeUtils {
 
+    private static final String PATH_CHARS = "qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM01234567890.";
     private static final TarCompressorUtils.Type PKG_TYPE = TarCompressorUtils.Type.ZSTD;
     private static final String RESHADE_DIRECTX_PKG = "reshade-directx.tzst";
     private static final String RESHADE_PLUGINS_PKG = "reshade-plugins.tzst";
@@ -122,9 +123,7 @@ public class ReshadeUtils {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < output.length(); i++) {
             if (output.charAt(i) == '/' && i + 1 < output.length()) {
-                if ((output.charAt(i + 1) == 32) || (output.charAt(i + 1) == 47)) {
-                    continue;
-                } else if (output.charAt(i + 1) == '\'') {
+                if (PATH_CHARS.indexOf(output.charAt(i + 1)) < 0) {
                     continue;
                 }
             }
