@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.winlator.cmod;
+package com.winlator;
 
 import android.app.Activity;
 import android.app.ActivityOptions;
@@ -31,6 +31,8 @@ import android.content.SharedPreferences;
 
 import androidx.preference.PreferenceManager;
 
+import com.winlator.cmod.R;
+import com.winlator.cmod.XServerDisplayActivity;
 import com.winlator.cmod.xr.XrAPI;
 import com.winlator.cmod.xr.RuntimeMeta;
 import com.winlator.cmod.xr.RuntimePFD;

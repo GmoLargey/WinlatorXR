@@ -22,7 +22,7 @@ import android.view.KeyEvent;
 
 import androidx.preference.PreferenceManager;
 
-import com.winlator.cmod.XrActivity;
+import com.winlator.XrActivity;
 import com.winlator.cmod.container.Container;
 import com.winlator.cmod.contentdialog.NavigationDialog;
 import com.winlator.cmod.xserver.Keyboard;

@@ -14,7 +14,6 @@ import android.view.MotionEvent;
 import androidx.preference.PreferenceManager;
 
 import com.winlator.cmod.XServerDisplayActivity;
-import com.winlator.cmod.XrActivity;
 import com.winlator.cmod.contentdialog.ContentDialog;
 import com.winlator.cmod.contentdialog.ControllerAssignmentDialog;
 import com.winlator.cmod.core.StringUtils;

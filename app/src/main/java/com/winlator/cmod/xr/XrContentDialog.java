@@ -29,7 +29,7 @@ import android.view.inputmethod.BaseInputConnection;
 
 import androidx.annotation.NonNull;
 
-import com.winlator.cmod.XrActivity;
+import com.winlator.XrActivity;
 import com.winlator.cmod.xserver.Drawable;
 
 import java.util.ArrayList;

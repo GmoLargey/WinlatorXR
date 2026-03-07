@@ -18,7 +18,7 @@
  */
 package com.winlator.cmod.xr;
 
-import com.winlator.cmod.XrActivity;
+import com.winlator.XrActivity;
 
 public class XrVersion03 extends XrVersion02 {
 

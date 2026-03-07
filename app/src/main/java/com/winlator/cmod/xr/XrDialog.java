@@ -25,9 +25,9 @@ import android.widget.TextView;
 
 import androidx.preference.PreferenceManager;
 
+import com.winlator.XrActivity;
 import com.winlator.cmod.R;
 import com.winlator.cmod.XServerDisplayActivity;
-import com.winlator.cmod.XrActivity;
 import com.winlator.cmod.contentdialog.ContentDialog;
 
 public class XrDialog extends ContentDialog {
