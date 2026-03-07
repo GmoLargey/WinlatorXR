@@ -236,9 +236,7 @@ public class XrActivity extends XServerDisplayActivity {
 
     public static void openIntent(Activity context, int containerId, String path) {
         // Create the launch intent
-        boolean isPico = Build.MANUFACTURER.compareToIgnoreCase("PICO") == 0;
-        boolean isPfd = Build.MANUFACTURER.compareToIgnoreCase("PLAY FOR DREAM") == 0;
-        Intent intent = new Intent(context, isPico ? RuntimePico.class : isPfd ? RuntimePFD.class : RuntimeMeta.class);
+        Intent intent = new Intent(context, getRuntime());
         intent.putExtra("container_id", containerId);
         if (path != null) {
             intent.putExtra("shortcut_path", path);
@@ -285,6 +283,16 @@ public class XrActivity extends XServerDisplayActivity {
             xrController.updateMouseState(buttons);
             xrController.updateKeyboardButtons(buttons);
             lastActive = System.currentTimeMillis();
+        }
+    }
+
+    private static Class getRuntime() {
+        if (Build.MANUFACTURER.compareToIgnoreCase("PICO") == 0) {
+            return RuntimePico.class;
+        } else if (Build.MANUFACTURER.compareToIgnoreCase("PLAY FOR DREAM") == 0) {
+            return RuntimePFD.class;
+        } else {
+            return RuntimeMeta.class;
         }
     }
 
