@@ -9,12 +9,6 @@ add_subdirectory(patchelf)
 
 # Add Winlator shared library
 add_library(winlator SHARED
-        xr/engine.c
-        xr/framebuffer.c
-        xr/input.c
-        xr/main.c
-        xr/math.c
-        xr/renderer.c
         winlator/drawable.c
         winlator/gpu_image.c
         winlator/sysvshared_memory.c
@@ -28,10 +22,25 @@ target_link_libraries(winlator
         log
         android
         jnigraphics
-        openxr_loader
         aaudio
         EGL
         GLESv2
+)
+
+# Add XR shared library
+add_library(xr SHARED
+        xr/engine.c
+        xr/framebuffer.c
+        xr/input.c
+        xr/main.c
+        xr/math.c
+        xr/renderer.c
+)
+
+target_link_libraries(xr
+        log
+        openxr_loader
+        EGL
         GLESv3
 )
 

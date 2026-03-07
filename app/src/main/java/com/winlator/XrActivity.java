@@ -79,6 +79,10 @@ public class XrActivity extends XServerDisplayActivity {
     private XrController xrController = null;
     private XrKeyboard xrKeyboard = null;
 
+    static {
+        System.loadLibrary("xr");
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
