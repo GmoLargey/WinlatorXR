@@ -24,7 +24,6 @@ import androidx.preference.PreferenceManager;
 
 import com.winlator.cmod.XrActivity;
 import com.winlator.cmod.container.Container;
-import com.winlator.cmod.contentdialog.ContentDialog;
 import com.winlator.cmod.contentdialog.NavigationDialog;
 import com.winlator.cmod.xserver.Keyboard;
 import com.winlator.cmod.xserver.Pointer;
@@ -58,7 +57,7 @@ public class XrController {
         XrInterface.ControllerButton primaryRight = primaryController == 0 ? XrInterface.ControllerButton.L_THUMBSTICK_RIGHT : XrInterface.ControllerButton.R_THUMBSTICK_RIGHT;
 
         // Pass the input to the Android UI
-        ContentDialog dialog = ContentDialog.getFrontInstance();
+        XrContentDialog dialog = XrContentDialog.getFrontInstance();
         if (dialog != null) {
             if (getButtonClicked(buttons, primaryPress)) instance.runOnUiThread(dialog::onBackPressed);
             if (getButtonClicked(buttons, primaryUp)) instance.runOnUiThread(() -> dialog.onKeyAction(KeyEvent.KEYCODE_DPAD_UP));

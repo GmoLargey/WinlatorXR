@@ -24,7 +24,6 @@ import android.util.DisplayMetrics;
 import android.util.Pair;
 
 import com.winlator.cmod.XrActivity;
-import com.winlator.cmod.contentdialog.ContentDialog;
 import com.winlator.cmod.math.XForm;
 import com.winlator.cmod.renderer.GLRenderer;
 import com.winlator.cmod.renderer.RenderableWindow;
@@ -196,7 +195,7 @@ public class XrRenderer extends GLRenderer {
         float aspect = xServer.screenInfo.width / (float)xServer.screenInfo.height;;
         try (XLock lock = xServer.lock(XServer.Lockable.DRAWABLE_MANAGER)) {
             float div = XrActivity.getSBS() ? 2 : 1;
-            ContentDialog dialog = ContentDialog.getFrontInstance();
+            XrContentDialog dialog = XrContentDialog.getFrontInstance();
             if (dialog != null) {
                 Drawable drawable = dialog.getDrawable();
                 if (drawable != null) {

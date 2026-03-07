@@ -31,11 +31,11 @@ import android.content.SharedPreferences;
 
 import androidx.preference.PreferenceManager;
 
-import com.winlator.cmod.contentdialog.ContentDialog;
 import com.winlator.cmod.xr.XrAPI;
 import com.winlator.cmod.xr.RuntimeMeta;
 import com.winlator.cmod.xr.RuntimePFD;
 import com.winlator.cmod.xr.RuntimePico;
+import com.winlator.cmod.xr.XrContentDialog;
 import com.winlator.cmod.xr.XrController;
 import com.winlator.cmod.xr.XrKeyboard;
 import com.winlator.cmod.xserver.Drawable;
@@ -128,18 +128,18 @@ public class XrActivity extends XServerDisplayActivity {
     }
 
     public static boolean getImmersive() {
-        return isImmersive && ContentDialog.getFrontInstance() == null;
+        return isImmersive && XrContentDialog.getFrontInstance() == null;
     }
 
     public static boolean getAER() {
-        return isAER && ContentDialog.getFrontInstance() == null;
+        return isAER && XrContentDialog.getFrontInstance() == null;
     }
     public static boolean getSBS() {
         return isSBS;
     }
 
     public static boolean getVR() {
-        return isVR && ContentDialog.getFrontInstance() == null;
+        return isVR && XrContentDialog.getFrontInstance() == null;
     }
 
     public static float getDistance() {
