@@ -160,7 +160,11 @@ public class XrActivity extends XServerDisplayActivity {
         if (context != null) {
             isEnabled = PreferenceManager.getDefaultSharedPreferences(context).getBoolean("use_xr", true);
         }
-        return isEnabled;
+        return isEnabled && isSupported();
+    }
+
+    public static boolean isSupported() {
+        return getRuntime() != null;
     }
 
     @Override
@@ -291,8 +295,12 @@ public class XrActivity extends XServerDisplayActivity {
             return RuntimePico.class;
         } else if (Build.MANUFACTURER.compareToIgnoreCase("PLAY FOR DREAM") == 0) {
             return RuntimePFD.class;
-        } else {
+        } else if (Build.MANUFACTURER.compareToIgnoreCase("OCULUS") == 0) {
             return RuntimeMeta.class;
+        } else if (Build.MANUFACTURER.compareToIgnoreCase("META") == 0) {
+            return RuntimeMeta.class;
+        } else {
+            return null;
         }
     }
 
