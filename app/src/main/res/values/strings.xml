@@ -459,7 +459,7 @@
     <string name="thumbstick_up">Thumbstick up</string>
     <string name="thumbstick_down">Thumbstick down</string>
     <string name="xr_3d">OpenXR 3D rendering</string>
-    <string name="use_reshade">Inject Reshade SuperDepth3D (this is not recommended for multiplayer games)</string>
+    <string name="use_reshade">Inject Reshade SuperDepth3D (supported only in DirectX 9 and higher)</string>
     <string name="reshade">Reshade</string>
 
     <string name="secondary_executable">Path:</string>
