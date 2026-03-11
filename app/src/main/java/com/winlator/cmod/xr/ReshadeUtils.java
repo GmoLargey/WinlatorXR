@@ -25,12 +25,9 @@ import com.winlator.cmod.container.Container;
 import com.winlator.cmod.container.Shortcut;
 import com.winlator.cmod.core.MSLink;
 import com.winlator.cmod.core.TarCompressorUtils;
-import com.winlator.cmod.core.WineRegistryEditor;
 import com.winlator.cmod.xenvironment.ImageFs;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.nio.charset.StandardCharsets;
 
 public class ReshadeUtils {
 
@@ -38,12 +35,6 @@ public class ReshadeUtils {
     private static final TarCompressorUtils.Type PKG_TYPE = TarCompressorUtils.Type.ZSTD;
     private static final String RESHADE_DIRECTX_PKG = "reshade-directx.tzst";
     private static final String RESHADE_PLUGINS_PKG = "reshade-plugins.tzst";
-    private static final String RESHADE_VULKAN_PKG = "reshade-vulkan.tzst";
-    private static final String VULKAN_INI_FILE = "ReShade/ReShadeApps.ini";
-    private static final String VULKAN_KEY_32BIT = "Software\\Khronos\\Vulkan\\ImplicitLayers";
-    private static final String VULKAN_KEY_64BIT = "Software\\WOW6432Node\\Khronos\\Vulkan\\ImplicitLayers";
-    private static final String VULKAN_NAME_32BIT = "C:\\ProgramData\\ReShade\\ReShade32.json";
-    private static final String VULKAN_NAME_64BIT = "C:\\ProgramData\\ReShade\\ReShade64.json";
 
     public static void update(Context context, ImageFs imageFs, Shortcut shortcut) {
         // Get destination path
@@ -54,16 +45,12 @@ public class ReshadeUtils {
         // Update packages
         updatePlugins(context, useReshade, dst);
         updateDirectX(context, useReshade, dst);
-        updateVulkan(context, useReshade, shortcut, imageFs, exe);
 
         // Workaround for launchers
         File ue = locateUE(dst);
         if (ue != null) {
-            dst = ue;
-            exe = getFirstExe(dst);
-            updatePlugins(context, useReshade, dst);
-            updateDirectX(context, useReshade, dst);
-            updateVulkan(context, useReshade, shortcut, imageFs, exe);
+            updatePlugins(context, useReshade, ue);
+            updateDirectX(context, useReshade, ue);
         }
     }
 
@@ -94,46 +81,6 @@ public class ReshadeUtils {
             Log.i("ReshadeUtils", "Removing reshade from " + dst.getAbsolutePath());
             TarCompressorUtils.remove(PKG_TYPE, context, RESHADE_PLUGINS_PKG, dst);
         }
-    }
-
-    private static void updateVulkan(Context context, boolean useReshade, Shortcut shortcut, ImageFs imageFs, File exe) {
-        // Update registry
-        File systemRegFile = new File(shortcut.container.getRootDir(), ".wine/system.reg");
-        try (WineRegistryEditor registryEditor = new WineRegistryEditor(systemRegFile)) {
-            registryEditor.setCreateKeyIfNotExist(true);
-            registryEditor.setDwordValue(VULKAN_KEY_32BIT, VULKAN_NAME_32BIT, 0);
-            registryEditor.setDwordValue(VULKAN_KEY_64BIT, VULKAN_NAME_64BIT, 0);
-        }
-
-        // Update Reshade files
-        File dst = new File(imageFs.getRootDir(), ImageFs.WINEPREFIX + "/drive_c/ProgramData/");
-        dst.mkdirs();
-        TarCompressorUtils.extract(PKG_TYPE, context, RESHADE_VULKAN_PKG, dst);
-
-        // Setup ini file
-        try {
-            FileOutputStream fos = new FileOutputStream(new File(dst, VULKAN_INI_FILE));
-            String data = "Apps=";
-            if (useReshade) {
-                data += getSandboxedPath(imageFs, shortcut.container, exe);
-            }
-            fos.write(data.getBytes(StandardCharsets.UTF_8));
-            fos.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private static File getFirstExe(File dst) {
-        File[] files = dst.listFiles();
-        if (files != null) {
-            for (File file : files) {
-                if (file.getAbsolutePath().endsWith(".exe")) {
-                    return file;
-                }
-            }
-        }
-        return null;
     }
 
     private static File getLocalExeFile(ImageFs imageFs, Shortcut shortcut) {
@@ -180,27 +127,6 @@ public class ReshadeUtils {
             }
         }
         return new File(imageFs.getRootDir(), ImageFs.WINEPREFIX + "/drive_" + sb);
-    }
-
-    private static String getSandboxedPath(ImageFs imageFs, Container container, File file) {
-        // Get sandboxed drive
-        String output = "";
-        String base = new File(imageFs.getRootDir(), ImageFs.WINEPREFIX + "/drive_c/").getAbsolutePath();
-        if (file.getAbsolutePath().startsWith(base)) {
-            output = "C:\\";
-        } else {
-            for (String[] it : Container.drivesIterator(container.getDrives())) {
-                if (file.getAbsolutePath().startsWith(it[1])) {
-                    output = it[0].toUpperCase() + ":\\";
-                    base = it[1];
-                }
-            }
-        }
-
-        // Get full path
-        String path = file.getAbsolutePath().substring(base.length() + 1);
-        output += path.replace("/", "\\");
-        return output;
     }
 
     private static File locateUE(File dst) {
