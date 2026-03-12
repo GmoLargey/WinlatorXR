@@ -460,6 +460,7 @@
     <string name="thumbstick_down">Thumbstick down</string>
     <string name="xr_3d">OpenXR 3D rendering</string>
     <string name="use_reshade">Inject Reshade SuperDepth3D (supported only in DirectX 9 and higher)</string>
+    <string name="force_dxgi">Inject Reshade with forced DXGI (that could resolve compatibility issues)</string>
     <string name="reshade">Reshade</string>
 
     <string name="secondary_executable">Path:</string>

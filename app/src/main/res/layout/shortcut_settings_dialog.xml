@@ -277,6 +277,12 @@
             android:layout_height="wrap_content"
             android:text="@string/use_reshade" />
 
+        <CheckBox
+            android:id="@+id/CBForceDXGI"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/force_dxgi" />
+
 
         <!-- Secondary Executable Options -->
         <LinearLayout

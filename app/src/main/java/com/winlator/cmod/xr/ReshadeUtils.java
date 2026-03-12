@@ -43,20 +43,21 @@ public class ReshadeUtils {
         // Get destination path
         File dst = getLocalExeFile(imageFs, shortcut).getParentFile();
         boolean useReshade = shortcut.getExtra("useReshade", "0").equals("1");
+        boolean forceDXGI = useReshade && shortcut.getExtra("forceDXGI", "0").equals("1");
 
         // Update packages
         updatePlugins(context, useReshade, dst);
-        updateDirectX(context, useReshade, dst);
+        updateDirectX(context, useReshade, forceDXGI, dst);
 
         // Workaround for launchers
         File ue = locateUE(dst);
         if (ue != null) {
             updatePlugins(context, useReshade, ue);
-            updateDirectX(context, useReshade, ue);
+            updateDirectX(context, useReshade, forceDXGI, ue);
         }
     }
 
-    private static void updateDirectX(Context context, boolean useReshade, File dst) {
+    private static void updateDirectX(Context context, boolean useReshade, boolean forceDXGI, File dst) {
         // Add or remove Reshade files
         TarCompressorUtils.Status extracted;
         extracted = TarCompressorUtils.isExtracted(PKG_TYPE, context, RESHADE_DIRECTX_PKG, dst);
@@ -64,7 +65,7 @@ public class ReshadeUtils {
             if (useReshade) {
                 Log.i("ReshadeUtils", "Extracting reshade to " + dst.getAbsolutePath());
                 TarCompressorUtils.extract(PKG_TYPE, context, RESHADE_DIRECTX_PKG, dst);
-                if (isUsingDXGI(dst)) {
+                if (forceDXGI || isUsingDXGI(dst)) {
                     deleteClones(dst, RESHADE_DIRECTX_CLONES);
                 } else {
                     cloneFile(new File(dst, RESHADE_DIRECTX_DLL), RESHADE_DIRECTX_CLONES);
