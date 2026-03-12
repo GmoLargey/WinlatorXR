@@ -64,7 +64,11 @@ public class ReshadeUtils {
             if (useReshade) {
                 Log.i("ReshadeUtils", "Extracting reshade to " + dst.getAbsolutePath());
                 TarCompressorUtils.extract(PKG_TYPE, context, RESHADE_DIRECTX_PKG, dst);
-                cloneFile(new File(dst, RESHADE_DIRECTX_DLL), RESHADE_DIRECTX_CLONES);
+                if (isUsingDXGI(dst)) {
+                    deleteClones(dst, RESHADE_DIRECTX_CLONES);
+                } else {
+                    cloneFile(new File(dst, RESHADE_DIRECTX_DLL), RESHADE_DIRECTX_CLONES);
+                }
             } else {
                 Log.i("ReshadeUtils", "Removing reshade from " + dst.getAbsolutePath());
                 TarCompressorUtils.remove(PKG_TYPE, context, RESHADE_DIRECTX_PKG, dst);
@@ -146,6 +150,16 @@ public class ReshadeUtils {
         return new File(imageFs.getRootDir(), ImageFs.WINEPREFIX + "/drive_" + sb);
     }
 
+    private static boolean isUsingDXGI(File dst) {
+        if (locateUE(dst) != null) {
+            return true;
+        } else if (locateUnity(dst)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     private static File locateUE(File dst) {
         File[] files = dst.listFiles();
         if (files != null) {
@@ -159,5 +173,22 @@ public class ReshadeUtils {
             }
         }
         return dst.getAbsolutePath().endsWith("Binaries/Win64") ? dst : null;
+    }
+
+    private static boolean locateUnity(File dst) {
+        File[] files = dst.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                if (file.isDirectory()) {
+                    boolean result = locateUnity(file);
+                    if (result) {
+                        return true;
+                    }
+                } else if (file.getAbsolutePath().endsWith("UnityEngine.dll")) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }
