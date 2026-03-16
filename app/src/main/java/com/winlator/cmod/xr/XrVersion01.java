@@ -98,8 +98,8 @@ public class XrVersion01 implements XrInterface {
         return 7278;
     }
 
-    public int getPortOut() {
-        return 7872;
+    public int[] getPortsOut() {
+        return new int[]{7872};
     }
 
     @Override

@@ -97,8 +97,8 @@ public class XrAPI implements XrInterface, Runnable {
         return impl != null ? impl.getPortIn() : 0;
     }
 
-    public int getPortOut() {
-        return impl != null ? impl.getPortOut() : 0;
+    public int[] getPortsOut() {
+        return impl != null ? impl.getPortsOut() : new int[] {0};
     }
 
     public float getValue(@NonNull AppInput index) {
@@ -135,7 +135,9 @@ public class XrAPI implements XrInterface, Runnable {
     public void send(@NonNull byte[] bytes) throws Exception {
         //Send data to localhost
         InetAddress address = InetAddress.getLocalHost();
-        socket.send(new DatagramPacket(bytes, bytes.length, address, getPortOut()));
+        for (int port : getPortsOut()) {
+            socket.send(new DatagramPacket(bytes, bytes.length, address, port));
+        }
 
         if (debugMode) {
             //Get requested IP from the filesystem
@@ -153,7 +155,9 @@ public class XrAPI implements XrInterface, Runnable {
             //Send the data over the network
             if (!debugIp.isEmpty()) {
                 InetAddress debugIPAdd = InetAddress.getByName(debugIp);
-                socket.send(new DatagramPacket(bytes, bytes.length, debugIPAdd, getPortOut()));
+                for (int port : getPortsOut()) {
+                    socket.send(new DatagramPacket(bytes, bytes.length, debugIPAdd, port));
+                }
             }
         }
     }
