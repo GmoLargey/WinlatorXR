@@ -73,6 +73,7 @@
         <item>1024 MB</item>
         <item>2048 MB</item>
         <item>4096 MB</item>
+        <item>6144 MB</item>
     </string-array>
     <string-array name="device_memory_entries">
     <item>0 (Default)</item>
@@ -80,6 +81,7 @@
     <item>1024 MB</item>
     <item>2048 MB</item>
     <item>4096 MB</item>
+    <item>6144 MB</item>
     </string-array>
     <string-array name="frame_sync_entries">
         <item>Never</item>
@@ -95,6 +97,7 @@
         <item>1024 MB</item>
         <item>2048 MB</item>
         <item>4096 MB</item>
+        <item>6144 MB</item>
     </string-array>
     <string-array name="dxvk_framerate_entries">
         <item>0 (Default)</item>
