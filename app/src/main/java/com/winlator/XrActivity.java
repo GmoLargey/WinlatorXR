@@ -323,11 +323,6 @@ public class XrActivity extends XServerDisplayActivity {
                 // Set the param to true and put a udp_debug folder in your Winlator D:\ drive
                 // with a file named the IP on LAN to send XR data via UDP traffic to that IP.
                 xrAPI = new XrAPI(false);
-
-                // Create UDP listener background thread
-                Thread udpThread = new Thread(xrAPI);
-                udpThread.setDaemon(true);
-                udpThread.start();
             }
 
             // VR mode update

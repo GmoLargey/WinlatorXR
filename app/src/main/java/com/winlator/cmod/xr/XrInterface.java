@@ -43,6 +43,8 @@ public interface XrInterface {
     void dataReceived(@NonNull String message);
     String encode(@NonNull float[] axes, @NonNull boolean[] buttons, int clientIndex);
     String getFlags();
+    int getPortIn();
+    int getPortOut();
     float getValue(@NonNull AppInput index);
     void setValue(@NonNull AppInput index, float value);
 }

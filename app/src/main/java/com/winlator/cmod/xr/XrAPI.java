@@ -39,8 +39,6 @@ public class XrAPI implements XrInterface, Runnable {
     private static final String PATH_API = "/data/data/com.winlator.cmod/files/imagefs/tmp/xr";
     @SuppressLint("SdCardPath")
     private static final String PATH_DEBUG = "/sdcard/Download/udp_debug";
-    private static final int PORT_IN = 7278;
-    private static final int PORT_OUT = 7872;
     private static final String SYSTEM_FILE = "system";
     private static final String VERSION_FILE = "version";
 
@@ -95,6 +93,14 @@ public class XrAPI implements XrInterface, Runnable {
         return impl != null ? impl.getFlags() : "";
     }
 
+    public int getPortIn() {
+        return impl != null ? impl.getPortIn() : 0;
+    }
+
+    public int getPortOut() {
+        return impl != null ? impl.getPortOut() : 0;
+    }
+
     public float getValue(@NonNull AppInput index) {
         return impl != null ? impl.getValue(index) : 0.0f;
     }
@@ -112,7 +118,7 @@ public class XrAPI implements XrInterface, Runnable {
     @Override
     public void run() {
         byte[] buffer = new byte[BUFFER_SIZE];
-        try (DatagramSocket socket = new DatagramSocket(PORT_IN)) {
+        try (DatagramSocket socket = new DatagramSocket(getPortIn())) {
             DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
             running = true;
 
@@ -129,7 +135,7 @@ public class XrAPI implements XrInterface, Runnable {
     public void send(@NonNull byte[] bytes) throws Exception {
         //Send data to localhost
         InetAddress address = InetAddress.getLocalHost();
-        socket.send(new DatagramPacket(bytes, bytes.length, address, PORT_OUT));
+        socket.send(new DatagramPacket(bytes, bytes.length, address, getPortOut()));
 
         if (debugMode) {
             //Get requested IP from the filesystem
@@ -147,7 +153,7 @@ public class XrAPI implements XrInterface, Runnable {
             //Send the data over the network
             if (!debugIp.isEmpty()) {
                 InetAddress debugIPAdd = InetAddress.getByName(debugIp);
-                socket.send(new DatagramPacket(bytes, bytes.length, debugIPAdd, PORT_OUT));
+                socket.send(new DatagramPacket(bytes, bytes.length, debugIPAdd, getPortOut()));
             }
         }
     }
@@ -176,9 +182,15 @@ public class XrAPI implements XrInterface, Runnable {
                 if (version.startsWith("0.1")) impl = new XrVersion01(new File(PATH_API));
                 if (version.startsWith("0.2")) impl = new XrVersion02();
                 if (version.startsWith("0.3")) impl = new XrVersion03();
+                if (version.startsWith("0.4")) impl = new XrVersion04();
             } catch (Exception e) {
                 System.err.println("Error reading version file: " + e.getMessage());
             }
         }
+
+        // Create UDP listener background thread
+        Thread udpThread = new Thread(this);
+        udpThread.setDaemon(true);
+        udpThread.start();
     }
 }

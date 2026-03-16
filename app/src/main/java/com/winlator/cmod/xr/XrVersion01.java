@@ -94,6 +94,14 @@ public class XrVersion01 implements XrInterface {
         return "";
     }
 
+    public int getPortIn() {
+        return 7278;
+    }
+
+    public int getPortOut() {
+        return 7872;
+    }
+
     @Override
     public float getValue(@NonNull XrAPI.AppInput index) {
         return switch (index) {
