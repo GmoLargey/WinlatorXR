@@ -58,6 +58,7 @@ public class XrActivity extends XServerDisplayActivity {
 
     // Configuration flags
     private static boolean isEnabled = false;
+    private static boolean isHeadTrackingAllowed = false;
     public static boolean isImmersive = false;
     private static boolean isAER = false;
     public static boolean isSBS = false;
@@ -276,12 +277,12 @@ public class XrActivity extends XServerDisplayActivity {
         // XServer input
         try (XLock lock = instance.getXServer().lock(XServer.Lockable.WINDOW_MANAGER, XServer.Lockable.INPUT_DEVICE)) {
             if (mouseEmulation) {
-                xrController.updateMouseAxes(axes, isImmersive && !isUDP);
+                xrController.updateMouseAxes(axes, isImmersive && isHeadTrackingAllowed);
                 xrController.updateMouseSnapturn(buttons, isImmersive ? 125 : 25);
                 if (mouseLightgun && !isImmersive && !isVR)
                     xrController.updateMouseLightgun(axes, lastDistance);
             }
-            if (wheelEmulation) {
+            if (wheelEmulation && !isImmersive && !isVR) {
                 xrController.updateWheelEmulation(axes, buttons);
             }
             xrController.updateMouseState(buttons);
@@ -326,8 +327,10 @@ public class XrActivity extends XServerDisplayActivity {
             }
 
             // VR mode update
-            isUDP = xrAPI.getIntValue(AppInput.MODE_VR) > 0;
-            isVR = xrAPI.getIntValue(AppInput.MODE_VR) == 1;
+            int vrMode = xrAPI.getIntValue(AppInput.MODE_VR);
+            isHeadTrackingAllowed = (vrMode == 0) || (vrMode == 3);
+            isUDP = vrMode > 0;
+            isVR = vrMode == 1;
             getInstance().nativeSetUseVR(isVR);
 
             if (isUDP) {
