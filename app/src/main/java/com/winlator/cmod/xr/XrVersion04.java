@@ -24,10 +24,6 @@ public class XrVersion04 extends XrVersion03 {
         super();
     }
 
-    public int getPortIn() {
-        return 7728;
-    }
-
     @Override
     public int[] getPortsOut() {
         return new int[]{7872, 7873};
