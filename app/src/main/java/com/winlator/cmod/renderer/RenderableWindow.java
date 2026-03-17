@@ -4,8 +4,8 @@ import com.winlator.cmod.xserver.Drawable;
 
 public class RenderableWindow {
     public final Drawable content;
-    short rootX;
-    short rootY;
+    public short rootX;
+    public short rootY;
     final boolean forceFullscreen;
 
     public RenderableWindow(Drawable content, int rootX, int rootY) {

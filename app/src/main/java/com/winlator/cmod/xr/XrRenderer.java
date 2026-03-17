@@ -127,6 +127,9 @@ public class XrRenderer extends GLRenderer {
     protected Pair<Float, Float> preTransform() {
         if (!XrActivity.isEnabled(null)) {
             return super.preTransform();
+        } else if (!fullscreen && XrActivity.getSBS() && !renderableWindows.isEmpty()) {
+            RenderableWindow window = renderableWindows.get(renderableWindows.size() - 1);
+            return new Pair<>((float)window.rootX, (float)window.rootY);
         } else {
             return new Pair<>(0.0f, 0.0f);
         }
