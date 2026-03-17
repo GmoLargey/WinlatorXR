@@ -193,8 +193,10 @@ public class XrAPI implements XrInterface, Runnable {
         }
 
         // Create UDP listener background thread
-        Thread udpThread = new Thread(this);
-        udpThread.setDaemon(true);
-        udpThread.start();
+        if (impl != null) {
+            Thread udpThread = new Thread(this);
+            udpThread.setDaemon(true);
+            udpThread.start();
+        }
     }
 }
