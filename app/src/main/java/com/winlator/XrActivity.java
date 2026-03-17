@@ -99,6 +99,7 @@ public class XrActivity extends XServerDisplayActivity {
 
     @Override
     public synchronized void onPause() {
+        xrController.unload();
         xrKeyboard.unload();
         super.onPause();
     }
