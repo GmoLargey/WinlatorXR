@@ -18,19 +18,27 @@ import org.json.JSONObject;
 import java.io.File;
 import java.util.Iterator;
 
+/**
+ * Represents a Wine container configuration and state.
+ * This class handles all the settings for a specific Wine environment, including
+ * graphics drivers, emulator versions, environment variables, and more.
+ */
 public class Container {
+    /**
+     * Enum defining the mappings for XR controllers.
+     */
     public enum XrControllerMapping {
         BUTTON_A, BUTTON_B, BUTTON_X, BUTTON_Y, BUTTON_GRIP, BUTTON_TRIGGER,
         THUMBSTICK_UP, THUMBSTICK_DOWN, THUMBSTICK_LEFT, THUMBSTICK_RIGHT
     }
-    public static final String DEFAULT_ENV_VARS = "ZINK_DESCRIPTORS=lazy ZINK_DEBUG=compact MESA_SHADER_CACHE_DISABLE=false MESA_SHADER_CACHE_MAX_SIZE=512MB mesa_glthread=true WINEESYNC=1 MESA_VK_WSI_PRESENT_MODE=mailbox TU_DEBUG=noconform,sysmem DXVK_HUD=fps MANGOHUD=0 MANGOHUD_CONFIG=engine_version,gpu_stats=0";
+    public static final String DEFAULT_ENV_VARS = "ZINK_DESCRIPTORS=lazy ZINK_DEBUG=compact MESA_SHADER_CACHE_DISABLE=false MESA_SHADER_CACHE_MAX_SIZE=512MB mesa_glthread=true WINEESYNC=1 MESA_VK_WSI_PRESENT_MODE=mailbox TU_DEBUG=noconform,sysmem DXVK_HUD=fps MANGOHUD=0 MANGOHUD_CONFIG=horizontal,ram,procmem,gpu_temp,frame_timing,engine_version,gpu_stats=0";
     public static final String DEFAULT_SCREEN_SIZE = "1280x720";
     public static final String DEFAULT_GRAPHICS_DRIVER = "wrapper";
     public static final String DEFAULT_AUDIO_DRIVER = "pulseaudio";
     public static final String DEFAULT_EMULATOR = "FEXCore";
     public static final String DEFAULT_DXWRAPPER = "dxvk";
     public static final String DEFAULT_DXWRAPPERCONFIG = "version=" + DefaultVersion.DXVK + ",framerate=0,maxDeviceMemory=0,async=0,asyncCache=0" + ",vkd3dVersion=" + DefaultVersion.VKD3D + ",vkd3dLevel=12_1";
-    public static final String DEFAULT_GRAPHICSDRIVERCONFIG = "version=" + DefaultVersion.WRAPPER + ";blacklistedExtensions=" + ";maxDeviceMemory=0" + ";adrenotoolsTurnip=1" + ";frameSync=Normal";
+    public static final String DEFAULT_GRAPHICSDRIVERCONFIG = "version=" + DefaultVersion.WRAPPER + ";blacklistedExtensions=" + ";maxDeviceMemory=0" + ";adrenotoolsTurnip=1" + ";frameSync=Never";
     public static final String DEFAULT_DDRAWRAPPER = "dd7to9";
     public static final String DEFAULT_WINCOMPONENTS = "direct3d=1,directsound=0,directmusic=0,directshow=0,directplay=0,xaudio=0,vcrun2010=1,opengl=0";
     public static final String FALLBACK_WINCOMPONENTS = "direct3d=1,directsound=1,directmusic=1,directshow=1,directplay=1,xaudio=1,vcrun2010=1,opengl=0";
@@ -48,6 +56,9 @@ public class Container {
     public static final byte STARTUP_SELECTION_ESSENTIAL = 1;
     public static final byte STARTUP_SELECTION_AGGRESSIVE = 2;
     public static final byte MAX_DRIVE_LETTERS = 26;
+    /**
+     * Unique identifier for the container.
+     */
     public final int id;
     private String name;
     private String screenSize = DEFAULT_SCREEN_SIZE;
@@ -79,23 +90,38 @@ public class Container {
     private int gpuLevel = 75;
     private int refreshRate = 72;
     private int primaryController = 1;
+    /**
+     * Serialized mapping for XR controller buttons.
+     */
     private String controllerMapping = new String(new char[XrControllerMapping.values().length]);
     private String fexcoreVersion = DefaultVersion.FEXCORE;
     private String box64Version = DefaultVersion.BOX64;
     private String emulator;
     private boolean isRelativeMouseMovement;
 
+    /**
+     * Workaround flag for GStreamer related issues.
+     */
     private boolean gstreamerWorkaround = false;
 
     private ContainerManager containerManager;
 
 
 
+    /**
+     * Constructs a new Container with a specific ID.
+     * @param id The unique identifier for the container.
+     */
     public Container(int id) {
         this.id = id;
         this.name = "Container-"+id;
     }
 
+    /**
+     * Constructs a new Container with a specific ID and associated manager.
+     * @param id The unique identifier for the container.
+     * @param containerManager The manager handling this container.
+     */
     public Container(int id, ContainerManager containerManager) {
         this.id = id;
         this.name = "Container-"+id;
@@ -416,10 +442,20 @@ public class Container {
         this.inputType = inputType;
     }
 
+    /**
+     * Provides an iterator over the drives configured for this container.
+     * Each entry is a String array where [0] is the drive letter and [1] is the path.
+     * @return An iterable of drive definitions.
+     */
     public Iterable<String[]> drivesIterator() {
         return drivesIterator(drives);
     }
 
+    /**
+     * Provides an iterator over the drives in the given string representation.
+     * @param drives The drives string (e.g., "D:path1E:path2").
+     * @return An iterable of drive definitions.
+     */
     public static Iterable<String[]> drivesIterator(final String drives) {
         final int[] index = {drives.indexOf(":")};
         final String[] item = new String[2];
@@ -440,6 +476,9 @@ public class Container {
         };
     }
 
+    /**
+     * Saves the container configuration to a JSON file.
+     */
     public void saveData() {
         try {
             JSONObject data = new JSONObject();
@@ -485,6 +524,11 @@ public class Container {
     }
 
 
+    /**
+     * Loads the container configuration from a JSON object.
+     * @param data The JSON object containing the container settings.
+     * @throws JSONException If there's an error parsing the JSON.
+     */
     public void loadData(JSONObject data) throws JSONException {
         wineVersion = WineInfo.MAIN_WINE_VERSION.identifier();
         dxwrapperConfig = "";
@@ -604,6 +648,10 @@ public class Container {
         }
     }
 
+    /**
+     * Checks and migrates obsolete or missing properties in the container data.
+     * @param data The JSON object to check and update.
+     */
     public static void checkObsoleteOrMissingProperties(JSONObject data) {
         try {
             if (data.has("dxcomponents")) {
@@ -664,6 +712,10 @@ public class Container {
         catch (JSONException e) {}
     }
 
+    /**
+     * Generates a fallback CPU affinity list based on available processors.
+     * @return A comma-separated string of CPU indices.
+     */
     public static String getFallbackCPUList() {
         String cpuList = "";
         int numProcessors = Runtime.getRuntime().availableProcessors();
@@ -680,6 +732,11 @@ public class Container {
     }
 
     // Check if a specific environment variable exists
+    /**
+     * Checks if a specific environment variable entry (key=value) exists in the container's settings.
+     * @param keyValue The environment variable string to search for.
+     * @return true if the environment variable is present, false otherwise.
+     */
     public boolean hasEnvVar(String keyValue) {
         if (envVars == null || envVars.isEmpty()) return false;
         String[] vars = envVars.split(",");
