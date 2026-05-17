@@ -8,5 +8,4 @@
 .externalNativeBuild
 .cxx
 
-app/src/main/assets/
 app/src/main/cpp/jniLibs/
